@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0a0a0f">
+
+  <title data-i18n="music.meta.title">Музыка — GILDSPINE | Каталог треков</title>
+  <meta name="description"
+        content="Каталог треков GILDSPINE: 10 основных стилей и 10 экспериментальных. Dark Trap, Phonk, Witch House, Industrial Bass и другие. Stay Gold."
+        data-i18n-attr="content:music.meta.description">
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="GILDSPINE">
+  <meta property="og:title" content="GILDSPINE — Music">
+  <meta property="og:description" content="Dark Trap, Phonk, Witch House, Industrial Bass and more. Stay Gold.">
+  <meta property="og:image" content="assets/images/og-cover.jpg">
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230a0a0f'/%3E%3Cpath d='M16 3l9 13-9 13-9-13z' fill='none' stroke='%23c9a227' stroke-width='2'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="css/style.css">
+
+  <!-- Стили, специфичные для каталога (при желании перенесите в css/style.css) -->
+  <style>
+    /* ---------- Шапка: логотип + слоган ---------- */
+    .logo {
+      display: inline-flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      line-height: 1;
+    }
+
+    .logo__slogan {
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      font-weight: 400;
+      letter-spacing: 0.42em;
+      text-transform: none;
+      color: var(--text-muted);
+      text-shadow: none;
+    }
+
+    /* ---------- Обложки и заглушки ---------- */
+    .cover {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      overflow: hidden;
+      background: var(--surface-2);
+      border: 1px solid var(--border-gold-strong);
+      border-radius: var(--radius);
+    }
+
+    .cover img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .cover--placeholder {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.8rem;
+      padding: 1.1rem;
+      text-align: center;
+      background:
+        radial-gradient(70% 55% at 50% 38%, rgba(201, 162, 39, 0.28), transparent 70%),
+        radial-gradient(60% 50% at 85% 105%, rgba(139, 0, 0, 0.4), transparent 70%),
+        repeating-linear-gradient(45deg, rgba(201, 162, 39, 0.07) 0 1px, transparent 1px 14px),
+        linear-gradient(160deg, #1a1710, #0d0d13);
+    }
+
+    .cover__sigil {
+      width: 40%;
+      color: var(--gold);
+      filter: drop-shadow(0 0 14px rgba(201, 162, 39, 0.55));
+    }
+
+    .cover__sigil svg {
+      width: 100%;
+      height: auto;
+    }
+
+    .cover__label {
+      font-family: var(--font-display);
+      font-size: clamp(0.8rem, 0.7rem + 0.6vw, 1.05rem);
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--gold-bright);
+      overflow-wrap: anywhere;
+    }
+
+    .cover__sub {
+      font-family: var(--font-mono);
+      font-size: var(--fs-xs);
+      color: var(--text-muted);
+    }
+
+    /* ---------- Фильтры ---------- */
+    .filters {
+      display: grid;
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .filters__label {
+      margin-bottom: 0.7rem;
+    }
+
+    .filter-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+    }
+
+    .tab-btn {
+      display: inline-flex;
+      align-items: baseline;
+      gap: 0.55rem;
+      min-height: 46px;
+      padding: 0.6rem 1.15rem;
+      font-family: var(--font-display);
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      background: transparent;
+      border: 1px solid var(--border-gold);
+      border-radius: var(--radius);
+      transition:
+        color var(--t-fast) var(--ease),
+        border-color var(--t-fast) var(--ease),
+        background-color var(--t-fast) var(--ease),
+        box-shadow var(--t-med) var(--ease);
+    }
+
+    .tab-btn__count {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      font-weight: 400;
+      letter-spacing: 0.02em;
+      text-transform: none;
+      opacity: 0.8;
+    }
+
+    .tab-btn:hover {
+      color: var(--gold-bright);
+      border-color: var(--border-gold-strong);
+    }
+
+    .tab-btn[aria-pressed='true'] {
+      color: var(--gold);
+      background: rgba(201, 162, 39, 0.12);
+      border-color: var(--gold);
+      box-shadow: var(--glow-gold-soft);
+    }
+
+    .style-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      min-height: 38px;
+      padding: 0.3rem 0.8rem;
+      font-family: var(--font-mono);
+      font-size: var(--fs-xs);
+      letter-spacing: 0.03em;
+      color: var(--gold);
+      background: rgba(201, 162, 39, 0.05);
+      border: 1px solid var(--border-gold);
+      border-radius: 2px;
+      transition:
+        color var(--t-fast) var(--ease),
+        background-color var(--t-fast) var(--ease),
+        border-color var(--t-fast) var(--ease),
+        box-shadow var(--t-med) var(--ease);
+    }
+
+    .chip__n {
+      opacity: 0.65;
+    }
+
+    .chip:hover {
+      border-color: var(--gold);
+      box-shadow: var(--glow-gold-soft);
+    }
+
+    .chip.is-empty {
+      opacity: 0.55;
+    }
+
+    .chip[aria-pressed='true'] {
+      color: var(--bg);
+      background: var(--gold);
+      border-color: var(--gold-bright);
+      box-shadow: var(--glow-gold-soft);
+      opacity: 1;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      padding-top: 1.25rem;
+      border-top: 1px solid var(--border-gold-soft);
+    }
+
+    .toolbar__right {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .toolbar .select {
+      width: auto;
+      min-width: 190px;
+      color-scheme: dark;
+    }
+
+    /* ---------- Карточка трека ---------- */
+    .track-card__media {
+      display: block;
+      overflow: hidden;
+    }
+
+    .track-card__media .cover {
+      height: 100%;
+      aspect-ratio: auto;
+      border: 0;
+      border-radius: 0;
+    }
+
+    .track-card__media img {
+      transition: transform 0.6s var(--ease);
+    }
+
+    .track-card:hover .track-card__media img {
+      transform: scale(1.04);
+    }
+
+    .track-card__badge {
+      position: absolute;
+      top: 0.75rem;
+      left: 0.75rem;
+      z-index: 1;
+      background: rgba(10, 10, 15, 0.8);
+    }
+
+    .track-card__tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 0.8rem;
+    }
+
+    .track-card__title a {
+      color: var(--text);
+    }
+
+    .track-card__title a:hover {
+      color: var(--gold-bright);
+    }
+
+    .track-card__date {
+      margin-bottom: 0;
+    }
+
+    .track-card__links {
+      display: flex;
+      gap: 0.6rem;
+    }
+
+    .track-card__links .btn {
+      flex: 1 1 0;
+      padding-inline: 0.8rem;
+    }
+
+    .track-card__flag {
+      font-size: 1rem;
+      line-height: 1;
+    }
+
+    /* ---------- Пустое состояние ---------- */
+    .empty {
+      align-items: center;
+      text-align: center;
+      padding-block: 3rem;
+    }
+
+    .empty__title {
+      color: var(--gold);
+    }
+
+    .empty p {
+      margin: 0 auto 1.5rem;
+      color: var(--text-muted);
+    }
+  </style>
+
+  <!-- i18n подключается БЕЗ defer: словарь страницы регистрируется до перевода DOM -->
+  <script src="js/i18n.js"></script>
+  <script>
+    GildspineI18n.extend({
+      ru: {
+        'music.meta.title': 'Музыка — GILDSPINE | Каталог треков',
+        'music.meta.description': 'Каталог треков GILDSPINE: 10 основных стилей и 10 экспериментальных. Dark Trap, Phonk, Witch House, Industrial Bass и другие. Stay Gold.',
+        'music.page.lead': 'Каталог треков GILDSPINE: десять основных томов и десять экспериментальных стилей. Выберите звук — и спуститесь глубже.',
+
+        'music.filter.groups': 'Группы стилей',
+        'music.filter.styles': 'Стили',
+        'music.filter.reset': 'Сбросить фильтры',
+        'music.tab.all': 'Все треки',
+        'music.tab.main': 'Основные тома',
+        'music.tab.exp': 'Экспериментальные',
+        'music.tab.stylesCount': '({n} стилей)',
+
+        'music.sort.label': 'Сортировка',
+        'music.sort.new': 'Сначала новые',
+        'music.sort.old': 'Сначала старые',
+        'music.count': 'Найдено треков: {n}',
+
+        'music.empty.title': 'Здесь пока тихо',
+        'music.empty.text': 'В этом стиле ещё нет треков. Загляните позже или выберите другой стиль.',
+
+        'music.card.new': 'Новый',
+        'music.card.ru': 'РФ',
+        'music.card.world': 'Мир',
+        'music.card.ruAria': 'Слушать в России (BandLink)',
+        'music.card.worldAria': 'Слушать в мире (Hypeddit)',
+
+        'footer.docsTitle': 'Документы',
+        'footer.legal': 'Правовая информация',
+        'footer.privacy': 'Конфиденциальность',
+        'footer.terms': 'Условия использования'
+      },
+      en: {
+        'music.meta.title': 'Music — GILDSPINE | Track catalog',
+        'music.meta.description': 'GILDSPINE track catalog: 10 main styles and 10 experimental ones. Dark Trap, Phonk, Witch House, Industrial Bass and more. Stay Gold.',
+        'music.page.lead': 'The GILDSPINE track catalog: ten main volumes and ten experimental styles. Pick a sound — and descend deeper.',
+
+        'music.filter.groups': 'Style groups',
+        'music.filter.styles': 'Styles',
+        'music.filter.reset': 'Reset filters',
+        'music.tab.all': 'All tracks',
+        'music.tab.main': 'Main volumes',
+        'music.tab.exp': 'Experimental',
+        'music.tab.stylesCount': '({n} styles)',
+
+        'music.sort.label': 'Sort by',
+        'music.sort.new': 'Newest first',
+        'music.sort.old': 'Oldest first',
+        'music.count': 'Tracks found: {n}',
+
+        'music.empty.title': 'It is quiet here — for now',
+        'music.empty.text': 'There are no tracks in this style yet. Check back later or pick another style.',
+
+        'music.card.new': 'New',
+        'music.card.ru': 'RU',
+        'music.card.world': 'World',
+        'music.card.ruAria': 'Listen in Russia (BandLink)',
+        'music.card.worldAria': 'Listen worldwide (Hypeddit)',
+
+        'footer.docsTitle': 'Documents',
+        'footer.legal': 'Legal information',
+        'footer.privacy': 'Privacy',
+        'footer.terms': 'Terms of use'
+      }
+    });
+  </script>
+  <script src="js/data.js" defer></script>
+</head>
+
+<body id="top">
+
+  <a class="skip-link" href="#main" data-i18n="a11y.skip">Перейти к содержимому</a>
+
+  <!-- ======================= ШАПКА ======================= -->
+  <header class="site-header">
+    <div class="container header__inner">
+      <input type="checkbox" id="nav-toggle" class="nav-toggle"
+             aria-label="Открыть или закрыть меню" data-i18n-attr="aria-label:nav.toggle">
+
+      <a class="logo" href="index.html" aria-label="GILDSPINE — Stay Gold">
+        <span class="logo__name">GILDSPINE</span>
+        <span class="logo__slogan">Stay Gold</span>
+      </a>
+
+      <div class="header__controls">
+        <div class="lang-switch" role="group" aria-label="Выбор языка" data-i18n-attr="aria-label:lang.label">
+          <button type="button" class="lang-btn" data-set-lang="ru">RU</button>
+          <button type="button" class="lang-btn" data-set-lang="en">EN</button>
+        </div>
+        <label for="nav-toggle" class="burger" aria-hidden="true">
+          <span class="burger__bar"></span>
+          <span class="burger__bar"></span>
+          <span class="burger__bar"></span>
+        </label>
+      </div>
+
+      <nav class="main-nav" aria-label="Основная навигация" data-i18n-attr="aria-label:nav.main">
+        <ul class="nav-list">
+          <li><a class="nav-link" href="index.html" data-i18n="nav.home">Главная</a></li>
+          <li><a class="nav-link" href="music.html" aria-current="page" data-i18n="nav.music">Музыка</a></li>
+          <li><a class="nav-link" href="book.html" data-i18n="nav.book">Книга</a></li>
+          <li><a class="nav-link" href="universe.html" data-i18n="nav.universe">Вселенная</a></li>
+          <li><a class="nav-link" href="media.html" data-i18n="nav.media">Медиа</a></li>
+          <li><a class="nav-link" href="donate.html" data-i18n="nav.support">Поддержать</a></li>
+          <li><a class="nav-link" href="about.html" data-i18n="nav.about">О проекте</a></li>
+          <li><a class="nav-link" href="contact.html" data-i18n="nav.contact">Связаться</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+
+    <!-- ======================= ЗАГОЛОВОК СТРАНИЦЫ ======================= -->
+    <section class="page-hero">
+      <div class="container">
+        <h1 class="page-hero__title" data-i18n="nav.music">Музыка</h1>
+        <p class="lead" data-i18n="music.page.lead">Каталог треков GILDSPINE: десять основных томов и десять экспериментальных стилей. Выберите звук — и спуститесь глубже.</p>
+      </div>
+    </section>
+
+    <!-- ======================= КАТАЛОГ ======================= -->
+    <section class="section" aria-label="Каталог треков" data-i18n-attr="aria-label:nav.music">
+      <div class="container">
+
+        <!-- Фильтры -->
+        <div class="filters">
+          <div>
+            <div class="filter-tabs" role="group" aria-label="Группы стилей" data-i18n-attr="aria-label:music.filter.groups">
+              <button type="button" class="tab-btn" data-group="all" aria-pressed="true">
+                <span data-i18n="music.tab.all">Все треки</span>
+              </button>
+              <button type="button" class="tab-btn" data-group="main" aria-pressed="false">
+                <span data-i18n="music.tab.main">Основные тома</span>
+                <span class="tab-btn__count" data-count-group="main"></span>
+              </button>
+              <button type="button" class="tab-btn" data-group="experimental" aria-pressed="false">
+                <span data-i18n="music.tab.exp">Экспериментальные</span>
+                <span class="tab-btn__count" data-count-group="experimental"></span>
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <p class="meta filters__label" id="styles-label" data-i18n="music.filter.styles">Стили</p>
+            <div class="style-chips" id="style-chips" role="group" aria-labelledby="styles-label"></div>
+          </div>
+        </div>
+
+        <!-- Панель: счётчик, сортировка, сброс -->
+        <div class="toolbar">
+          <p class="meta" id="track-count" role="status" aria-live="polite"></p>
+          <div class="toolbar__right">
+            <button type="button" class="btn btn--ghost btn--sm" id="filters-reset" hidden data-i18n="music.filter.reset">Сбросить фильтры</button>
+            <label class="sr-only" for="sort-select" data-i18n="music.sort.label">Сортировка</label>
+            <select class="select" id="sort-select">
+              <option value="new" data-i18n="music.sort.new">Сначала новые</option>
+              <option value="old" data-i18n="music.sort.old">Сначала старые</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Сетка треков -->
+        <div class="grid grid--3" id="track-grid"></div>
+
+        <!-- Пустое состояние -->
+        <div class="card empty" id="track-empty" hidden>
+          <h2 class="empty__title" data-i18n="music.empty.title">Здесь пока тихо</h2>
+          <p data-i18n="music.empty.text">В этом стиле ещё нет треков. Загляните позже или выберите другой стиль.</p>
+          <button type="button" class="btn" id="empty-reset" data-i18n="music.filter.reset">Сбросить фильтры</button>
+        </div>
+
+        <noscript><p class="text-muted">JavaScript is required to display the track catalog.</p></noscript>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ======================= ПОДВАЛ ======================= -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer__grid">
+
+        <div class="footer__brand">
+          <a class="logo" href="index.html" aria-label="GILDSPINE">GILDSPINE</a>
+          <p class="footer__slogan" data-i18n="footer.slogan">Stay Gold</p>
+          <p class="footer__text" data-i18n="footer.description">Тёмное фэнтези в музыке и литературе. Золото не тускнеет — даже во тьме.</p>
+        </div>
+
+        <nav aria-label="Навигация по сайту" data-i18n-attr="aria-label:footer.navTitle">
+          <h2 class="footer__title" data-i18n="footer.navTitle">Навигация</h2>
+          <ul class="footer__links">
+            <li><a href="index.html" data-i18n="nav.home">Главная</a></li>
+            <li><a href="music.html" data-i18n="nav.music">Музыка</a></li>
+            <li><a href="book.html" data-i18n="nav.book">Книга</a></li>
+            <li><a href="universe.html" data-i18n="nav.universe">Вселенная</a></li>
+            <li><a href="media.html" data-i18n="nav.media">Медиа</a></li>
+            <li><a href="donate.html" data-i18n="nav.support">Поддержать</a></li>
+            <li><a href="about.html" data-i18n="nav.about">О проекте</a></li>
+            <li><a href="contact.html" data-i18n="nav.contact">Связаться</a></li>
+          </ul>
+        </nav>
+
+        <nav aria-label="Документы" data-i18n-attr="aria-label:footer.docsTitle">
+          <h2 class="footer__title" data-i18n="footer.docsTitle">Документы</h2>
+          <ul class="footer__links">
+            <li><a href="legal.html" data-i18n="footer.legal">Правовая информация</a></li>
+            <li><a href="legal.html#privacy" data-i18n="footer.privacy">Конфиденциальность</a></li>
+            <li><a href="legal.html#terms" data-i18n="footer.terms">Условия использования</a></li>
+          </ul>
+        </nav>
+
+      </div>
+
+      <div class="footer__bottom">
+        <p>© <span data-year>2026</span> Gildspine. <span data-i18n="footer.rights">Все права защищены.</span></p>
+        <a class="footer__top-link" href="#top" data-i18n="footer.backToTop">Наверх</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ======================= СКРИПТ СТРАНИЦЫ ======================= -->
+  <script>
+    /* Каталог: фильтры по группам и стилям, сортировка, рендер карточек из js/data.js.
+       Состояние фильтров отражается в адресе (?group=…&style=…&sort=old) —
+       ссылкой можно поделиться, а перезагрузка не сбрасывает выбор. */
+    window.addEventListener('DOMContentLoaded', function () {
+      'use strict';
+
+      var I18n = window.GildspineI18n;
+      var D = window.GildspineData;
+      if (!I18n || !D) return;
+
+      var GROUPS = ['all', 'main', 'experimental'];
+      var state = { group: 'all', style: null, sort: 'new' };
+
+      var SIGIL =
+        '<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">' +
+        '<path d="M32 4 L52 32 L32 60 L12 32 Z"/>' +
+        '<path d="M32 4 V60 M12 32 H52" opacity=".55"/>' +
+        '<path d="M32 17 L42 32 L32 47 L22 32 Z" opacity=".8"/>' +
+        '</svg>';
+
+      var gridEl = document.getElementById('track-grid');
+      var emptyEl = document.getElementById('track-empty');
+      var countEl = document.getElementById('track-count');
+      var chipsEl = document.getElementById('style-chips');
+      var sortEl = document.getElementById('sort-select');
+      var resetEl = document.getElementById('filters-reset');
+      var emptyResetEl = document.getElementById('empty-reset');
+      var tabEls = Array.prototype.slice.call(document.querySelectorAll('.tab-btn'));
+
+      /* ---------- Хелперы ---------- */
+      function t(key) {
+        var v = I18n.t(key);
+        return v === undefined ? key : v;
+      }
+
+      function el(tag, className, text) {
+        var node = document.createElement(tag);
+        if (className) node.className = className;
+        if (text !== undefined && text !== null) node.textContent = text;
+        return node;
+      }
+
+      function externalLink(node, url) {
+        node.href = url;
+        node.target = '_blank';
+        node.rel = 'noopener noreferrer';
+        return node;
+      }
+
+      function styleById(id) {
+        for (var i = 0; i < D.musicStyles.length; i++) {
+          if (D.musicStyles[i].id === id) return D.musicStyles[i];
+        }
+        return null;
+      }
+
+      function tracksInStyle(name) {
+        return D.tracks.filter(function (tr) { return tr.style === name; }).length;
+      }
+
+      /* ---------- Обложка с заглушкой ---------- */
+      function coverPlaceholder(label, sub) {
+        var ph = el('div', 'cover cover--placeholder');
+        ph.setAttribute('role', 'img');
+        ph.setAttribute('aria-label', label);
+        var sigil = el('div', 'cover__sigil');
+        sigil.innerHTML = SIGIL; // константная разметка
+        ph.appendChild(sigil);
+        ph.appendChild(el('span', 'cover__label', label));
+        if (sub) ph.appendChild(el('span', 'cover__sub', sub));
+        return ph;
+      }
+
+      function buildCover(src, alt, label, sub) {
+        if (!src) return coverPlaceholder(label, sub);
+        var wrap = el('div', 'cover');
+        var img = new Image();
+        img.alt = alt;
+        img.decoding = 'async';
+        img.loading = 'lazy';
+        img.addEventListener('error', function () {
+          if (wrap.parentNode) wrap.parentNode.replaceChild(coverPlaceholder(label, sub), wrap);
+        });
+        wrap.appendChild(img);
+        img.src = src;
+        return wrap;
+      }
+
+      /* ---------- Карточка трека ---------- */
+      function regionButton(extraClass, emoji, labelKey, ariaKey, url, track) {
+        var a = externalLink(el('a', 'btn btn--sm ' + extraClass), url);
+        a.setAttribute('aria-label', t(ariaKey) + ': ' + track.title);
+        var flag = el('span', 'track-card__flag', emoji);
+        flag.setAttribute('aria-hidden', 'true');
+        a.appendChild(flag);
+        a.appendChild(document.createTextNode(' ' + t(labelKey)));
+        return a;
+      }
+
+      function buildCard(track) {
+        var href = 'track.html?id=' + encodeURIComponent(track.id);
+        var card = el('article', 'card card--interactive track-card');
+
+        // обложка — ссылка на страницу трека (для клавиатуры достаточно ссылки в заголовке)
+        var media = el('a', 'card__media track-card__media');
+        media.href = href;
+        media.tabIndex = -1;
+        media.setAttribute('aria-hidden', 'true');
+        media.appendChild(buildCover(track.cover, track.title, track.title, track.style));
+        card.appendChild(media);
+
+        if (track.isLatest) {
+          card.appendChild(el('span', 'tag tag--blood track-card__badge', t('music.card.new')));
+        }
+
+        var tags = el('div', 'track-card__tags');
+        tags.appendChild(el('span', 'tag', track.style));
+        card.appendChild(tags);
+
+        var title = el('h3', 'card__title track-card__title');
+        var titleLink = el('a', '', track.title);
+        titleLink.href = href;
+        title.appendChild(titleLink);
+        card.appendChild(title);
+
+        card.appendChild(el('p', 'meta track-card__date', D.formatDate(track.date)));
+
+        var footer = el('div', 'card__footer track-card__links');
+        footer.appendChild(regionButton('', '\uD83C\uDDF7\uD83C\uDDFA', 'music.card.ru', 'music.card.ruAria', track.bandlinkUrl, track));
+        footer.appendChild(regionButton('btn--neon', '\uD83C\uDF0D', 'music.card.world', 'music.card.worldAria', track.hypedditUrl, track));
+        card.appendChild(footer);
+
+        return card;
+      }
+
+      /* ---------- Фильтры: сборка (один раз) ---------- */
+      function buildChips() {
+        D.musicStyles.forEach(function (style) {
+          var n = tracksInStyle(style.name);
+          var chip = el('button', 'chip' + (n === 0 ? ' is-empty' : ''));
+          chip.type = 'button';
+          chip.setAttribute('data-style', style.id);
+          chip.setAttribute('data-category', style.category);
+          chip.setAttribute('aria-pressed', 'false');
+          chip.appendChild(document.createTextNode(style.name));
+          chip.appendChild(el('span', 'chip__n', String(n)));
+          chipsEl.appendChild(chip);
+        });
+      }
+
+      function updateTabCounts() {
+        ['main', 'experimental'].forEach(function (group) {
+          var node = document.querySelector('[data-count-group="' + group + '"]');
+          if (!node) return;
+          node.textContent = t('music.tab.stylesCount').replace('{n}', String(D.getStyles(group).length));
+        });
+      }
+
+      /* ---------- Обновление интерфейса ---------- */
+      function updateTabs() {
+        tabEls.forEach(function (tab) {
+          tab.setAttribute('aria-pressed', tab.getAttribute('data-group') === state.group ? 'true' : 'false');
+        });
+      }
+
+      function updateChips() {
+        Array.prototype.forEach.call(chipsEl.children, function (chip) {
+          var hidden = state.group !== 'all' && chip.getAttribute('data-category') !== state.group;
+          chip.hidden = hidden;
+          chip.setAttribute('aria-pressed', chip.getAttribute('data-style') === state.style ? 'true' : 'false');
+        });
+      }
+
+      function renderGrid() {
+        var style = state.style ? styleById(state.style) : null;
+        var list = D.getTracks({ category: state.group, style: style ? style.name : null });
+
+        list.sort(function (a, b) {
+          if (a.date === b.date) return 0;
+          var newer = a.date < b.date ? 1 : -1;
+          return state.sort === 'old' ? -newer : newer;
+        });
+
+        gridEl.textContent = '';
+        list.forEach(function (track) { gridEl.appendChild(buildCard(track)); });
+
+        var hasResults = list.length > 0;
+        gridEl.hidden = !hasResults;
+        emptyEl.hidden = hasResults;
+        countEl.textContent = t('music.count').replace('{n}', String(list.length));
+        resetEl.hidden = state.group === 'all' && !state.style;
+      }
+
+      function updateUrl() {
+        var params = new URLSearchParams();
+        if (state.group !== 'all') params.set('group', state.group);
+        if (state.style) params.set('style', state.style);
+        if (state.sort !== 'new') params.set('sort', state.sort);
+        var qs = params.toString();
+        try {
+          history.replaceState(null, '', location.pathname + (qs ? '?' + qs : ''));
+        } catch (e) { /* file:// и т.п. — адрес не обновляем */ }
+      }
+
+      function update() {
+        updateTabs();
+        updateChips();
+        renderGrid();
+        sortEl.value = state.sort;
+        updateUrl();
+      }
+
+      function resetFilters() {
+        state.group = 'all';
+        state.style = null;
+        update();
+      }
+
+      /* ---------- События ---------- */
+      tabEls.forEach(function (tab) {
+        tab.addEventListener('click', function () {
+          state.group = tab.getAttribute('data-group');
+          if (state.style) {
+            var s = styleById(state.style);
+            if (state.group !== 'all' && s && s.category !== state.group) state.style = null;
+          }
+          update();
+        });
+      });
+
+      chipsEl.addEventListener('click', function (event) {
+        var chip = event.target.closest('.chip');
+        if (!chip) return;
+        var id = chip.getAttribute('data-style');
+        state.style = state.style === id ? null : id;
+        update();
+      });
+
+      sortEl.addEventListener('change', function () {
+        state.sort = sortEl.value === 'old' ? 'old' : 'new';
+        update();
+      });
+
+      resetEl.addEventListener('click', resetFilters);
+      emptyResetEl.addEventListener('click', resetFilters);
+
+      // смена языка: переписываем подписи, кнопки и даты в карточках
+      document.addEventListener('gildspine:languagechange', function () {
+        updateTabCounts();
+        renderGrid();
+      });
+
+      /* ---------- Старт: читаем состояние из адреса ---------- */
+      var query = new URLSearchParams(location.search);
+      var qGroup = query.get('group');
+      if (GROUPS.indexOf(qGroup) !== -1) state.group = qGroup;
+
+      var qStyle = styleById(query.get('style'));
+      if (qStyle) {
+        state.style = qStyle.id;
+        if (state.group !== 'all' && qStyle.category !== state.group) state.group = 'all';
+      }
+      if (query.get('sort') === 'old') state.sort = 'old';
+
+      buildChips();
+      updateTabCounts();
+      update();
+    });
+  </script>
+</body>
+</html>
