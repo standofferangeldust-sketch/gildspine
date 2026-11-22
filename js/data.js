@@ -528,7 +528,7 @@
     /* Поддержка — рубли (РФ) */
     cloudtips: {
       name: 'CloudTips',
-      url: 'https://pay.cloudtips.ru/p/REPLACE_CLOUDTIPS_ID'
+      url: 'https://pay.cloudtips.ru/p/fbb9caa0'
     },
 
     /* Поддержка — криптокошельки */
@@ -537,7 +537,7 @@
         id: 'usdt-trc20',
         name: 'USDT',
         network: 'TRC-20',
-        address: 'REPLACE_WITH_USDT_TRC20_ADDRESS',
+        address: 'TUZRbBtcVcNTt7sgJfvRoedv2TVGqWMu7u',
         memo: null,
         qr: 'assets/images/qr/usdt-trc20.png'
       },
@@ -545,7 +545,7 @@
         id: 'btc',
         name: 'Bitcoin',
         network: 'BTC',
-        address: 'REPLACE_WITH_BTC_ADDRESS',
+        address: 'bc1q9hdqrllwjsms74hfqnaq7hl03x77mcsnxu7m3f',
         memo: null,
         qr: 'assets/images/qr/btc.png'
       },
@@ -553,7 +553,7 @@
         id: 'ton',
         name: 'Toncoin',
         network: 'TON',
-        address: 'REPLACE_WITH_TON_ADDRESS',
+        address: 'UQCzsEkwPLdLtNI7wErtjCHlxM1hdvnM3iSmKjACh2kixjPu',
         memo: 'REPLACE_WITH_TON_MEMO_OR_NULL',
         qr: 'assets/images/qr/ton.png'
       },
@@ -561,7 +561,7 @@
         id: 'sol',
         name: 'Solana',
         network: 'SOL',
-        address: 'REPLACE_WITH_SOL_ADDRESS',
+        address: '3VZhfojd81E2NjVr6jnygp1RUyL7qqz6Lz29q23ugeRY',
         memo: null,
         qr: 'assets/images/qr/sol.png'
       },
@@ -569,7 +569,7 @@
         id: 'eth',
         name: 'Ethereum',
         network: 'ETH (ERC-20)',
-        address: 'REPLACE_WITH_ETH_ADDRESS',
+        address: '0x911FAaEE4942eF2dD1670a5c95e83fAED8EA7827',
         memo: null,
         qr: 'assets/images/qr/eth.png'
       }
