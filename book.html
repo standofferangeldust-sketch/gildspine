@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0a0a0f">
+
+  <title data-i18n="book.meta.title">«Первая частота» — книга GILDSPINE</title>
+  <meta name="description"
+        content="«Первая частота» — первая книга серии GILDSPINE: тёмное фэнтези о музыке как оружии. Читать отрывок, купить, подписаться на новые главы."
+        data-i18n-attr="content:book.meta.description">
+
+  <meta property="og:type" content="book">
+  <meta property="og:site_name" content="GILDSPINE">
+  <meta property="og:title" content="The First Frequency — GILDSPINE">
+  <meta property="og:description" content="Dark fantasy about music as a weapon. Book 1 of the GILDSPINE series.">
+  <meta property="og:image" content="assets/images/book-cover.jpg">
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230a0a0f'/%3E%3Cpath d='M16 3l9 13-9 13-9-13z' fill='none' stroke='%23c9a227' stroke-width='2'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="css/style.css">
+
+  <!-- Стили, специфичные для страницы книги (при желании перенесите в css/style.css) -->
+  <style>
+    /* ---------- Шапка: логотип + слоган ---------- */
+    .logo {
+      display: inline-flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      line-height: 1;
+    }
+
+    .logo__slogan {
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      font-weight: 400;
+      letter-spacing: 0.42em;
+      text-transform: none;
+      color: var(--text-muted);
+      text-shadow: none;
+    }
+
+    /* ---------- Обложка-переплёт ---------- */
+    .book-cover {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 2 / 3;
+      overflow: hidden;
+      background: #12110f;
+      border: 1px solid var(--border-gold-strong);
+      border-radius: 3px 8px 8px 3px;
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.55), var(--glow-gold-soft);
+    }
+
+    /* Корешок */
+    .book-cover__spine {
+      position: absolute;
+      inset: 0 auto 0 0;
+      z-index: 2;
+      width: 7%;
+      background: linear-gradient(90deg, #3a2f0c, #8a6d12 38%, #c9a227 50%, #5c4710 72%, rgba(0, 0, 0, 0.55));
+      box-shadow: 2px 0 8px rgba(0, 0, 0, 0.5);
+    }
+
+    /* Блик на переплёте */
+    .book-cover::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      z-index: 3;
+      pointer-events: none;
+      background: linear-gradient(105deg, rgba(255, 255, 255, 0.09), transparent 28%);
+    }
+
+    .book-cover img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .book-cover__art {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12% 9% 10% 16%;
+      text-align: center;
+      background:
+        radial-gradient(70% 45% at 55% 35%, rgba(201, 162, 39, 0.26), transparent 70%),
+        radial-gradient(60% 40% at 90% 105%, rgba(139, 0, 0, 0.45), transparent 70%),
+        repeating-linear-gradient(45deg, rgba(201, 162, 39, 0.06) 0 1px, transparent 1px 14px),
+        linear-gradient(165deg, #1b170d, #0b0b10);
+    }
+
+    /* Золотая рамка на обложке */
+    .book-cover__art::before {
+      content: '';
+      position: absolute;
+      inset: 4% 5% 4% 11%;
+      border: 1px solid rgba(201, 162, 39, 0.4);
+      pointer-events: none;
+    }
+
+    .book-cover__sigil {
+      width: 38%;
+      color: var(--gold);
+      filter: drop-shadow(0 0 14px rgba(201, 162, 39, 0.55));
+    }
+
+    .book-cover__sigil svg {
+      width: 100%;
+      height: auto;
+    }
+
+    .book-cover__num {
+      font-family: var(--font-display);
+      font-size: clamp(1.4rem, 1rem + 2vw, 2.4rem);
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      color: var(--gold-bright);
+    }
+
+    .book-cover__title {
+      font-family: var(--font-display);
+      font-size: clamp(0.8rem, 0.6rem + 1.1vw, 1.5rem);
+      font-weight: 700;
+      line-height: 1.3;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text);
+      overflow-wrap: anywhere;
+    }
+
+    .book-cover__brand {
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.4em;
+      color: var(--gold);
+    }
+
+    /* ---------- Главный блок книги ---------- */
+    .book-hero {
+      padding-block: clamp(2rem, 1.5rem + 4vw, 4.5rem);
+      background: radial-gradient(70% 90% at 80% 0%, rgba(123, 44, 191, 0.16), transparent 70%);
+    }
+
+    .book-hero .split {
+      align-items: start;
+    }
+
+    .book-hero__cover {
+      width: min(100%, 380px);
+      margin-inline: auto;
+    }
+
+    .book-hero__tags {
+      margin-bottom: 1.1rem;
+    }
+
+    .book-hero__title {
+      margin-bottom: 1.25rem;
+      font-size: var(--fs-2xl);
+      color: var(--gold);
+      text-shadow: 0 0 30px rgba(201, 162, 39, 0.25);
+    }
+
+    .book-hero__text p {
+      color: var(--text-muted);
+      font-size: var(--fs-md);
+      line-height: 1.75;
+      max-width: 62ch;
+    }
+
+    .book-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+      margin-top: 1.75rem;
+    }
+
+    .btn--lg {
+      min-height: 54px;
+      padding: 0.9rem 2rem;
+      font-size: 0.95rem;
+    }
+
+    .btn--accent {
+      box-shadow: var(--glow-gold-soft);
+    }
+
+    .book-actions__note {
+      margin-top: 0.6rem;
+    }
+
+    .buy-row__label {
+      margin-bottom: 0.6rem;
+    }
+
+    /* ---------- Список глав ---------- */
+    .chapter-list {
+      list-style: none;
+      border-top: 1px solid var(--border-gold-soft);
+    }
+
+    .chapter-item {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 1rem;
+      padding: 1.05rem 0.25rem;
+      border-bottom: 1px solid var(--border-gold-soft);
+      transition: background-color var(--t-fast) var(--ease);
+    }
+
+    .chapter-item:not(.is-soon):hover {
+      background: rgba(201, 162, 39, 0.05);
+    }
+
+    .chapter-item.is-soon .chapter-item__title {
+      color: var(--text-muted);
+    }
+
+    .chapter-item__num {
+      min-width: 2.2ch;
+      font-family: var(--font-mono);
+      font-size: var(--fs-sm);
+      color: var(--gold);
+    }
+
+    .chapter-item.is-soon .chapter-item__num {
+      color: var(--text-dim);
+    }
+
+    .chapter-item__title {
+      margin: 0 0 0.15rem;
+      font-size: var(--fs-md);
+      letter-spacing: 0.08em;
+    }
+
+    .chapter-item__title a {
+      color: var(--text);
+    }
+
+    .chapter-item__title a:hover {
+      color: var(--gold-bright);
+    }
+
+    /* ---------- Серия: сетка 10 книг ---------- */
+    .series-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+    }
+
+    @media (min-width: 1000px) {
+      .series-grid {
+        grid-template-columns: repeat(5, 1fr);
+        gap: 1.25rem;
+      }
+    }
+
+    .series-card {
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
+      padding: 0.75rem;
+      background: var(--surface);
+      border: 1px solid var(--border-gold);
+      border-radius: var(--radius);
+      transition: border-color var(--t-med) var(--ease), box-shadow var(--t-med) var(--ease);
+    }
+
+    .series-card--active {
+      border-color: var(--gold);
+      box-shadow: var(--glow-gold-soft);
+    }
+
+    .series-card--soon {
+      border-color: rgba(123, 44, 191, 0.55);
+    }
+
+    .series-card--locked {
+      border-color: rgba(139, 0, 0, 0.45);
+    }
+
+    .series-card__label {
+      margin: 0;
+      font-family: var(--font-mono);
+      font-size: var(--fs-xs);
+      letter-spacing: 0.06em;
+      color: var(--gold);
+    }
+
+    .series-card__title {
+      margin: 0;
+      font-size: 0.85rem;
+      line-height: 1.35;
+      letter-spacing: 0.08em;
+      overflow-wrap: anywhere;
+    }
+
+    .series-card__text {
+      margin: 0;
+      font-size: var(--fs-xs);
+      line-height: 1.5;
+      color: var(--text-muted);
+    }
+
+    .series-card__foot {
+      margin-top: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+
+    .series-card .tags {
+      gap: 0.35rem;
+    }
+
+    /* Статусы зашифрованных артефактов */
+    .status {
+      margin: 0;
+      font-family: var(--font-mono);
+      font-size: var(--fs-xs);
+      font-weight: 700;
+      letter-spacing: 0.08em;
+    }
+
+    .status--locked {
+      color: var(--gold);
+    }
+
+    .status--corrupted {
+      color: var(--blood-text);
+      text-shadow: 1px 0 rgba(123, 44, 191, 0.85), -1px 0 rgba(139, 0, 0, 0.9);
+      animation: glitch 3.2s steps(1) infinite;
+    }
+
+    @keyframes glitch {
+      0%, 88%, 100% { transform: none; }
+      90% { transform: translateX(-2px); }
+      94% { transform: translateX(2px) skewX(-6deg); }
+    }
+
+    /* ---------- «Зашифрованный артефакт» ---------- */
+    .artifact {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 2 / 3;
+      overflow: hidden;
+      background: linear-gradient(160deg, #15121b, #0a0a0f);
+      border: 1px solid rgba(201, 162, 39, 0.18);
+      border-radius: 2px 6px 6px 2px;
+    }
+
+    .artifact__glyphs {
+      position: absolute;
+      inset: 0;
+      padding: 0.75rem;
+      margin: 0;
+      overflow: hidden;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      line-height: 1.3;
+      letter-spacing: 0.2em;
+      white-space: pre;
+      color: rgba(201, 162, 39, 0.4);
+      filter: blur(2.2px);
+      animation: flicker 5.5s steps(1) infinite;
+    }
+
+    @keyframes flicker {
+      0%, 100% { opacity: 1; }
+      40% { opacity: 0.75; }
+      42% { opacity: 1; }
+      71% { opacity: 0.6; transform: translateX(1px); }
+      73% { opacity: 1; transform: none; }
+    }
+
+    /* Строки-помехи и затемнение */
+    .artifact::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      background:
+        repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.28) 0 1px, transparent 1px 3px),
+        radial-gradient(80% 60% at 50% 45%, transparent, rgba(10, 10, 15, 0.85)),
+        linear-gradient(180deg, rgba(139, 0, 0, 0.12), rgba(123, 44, 191, 0.1));
+      pointer-events: none;
+    }
+
+    .artifact__lock {
+      position: absolute;
+      top: 44%;
+      left: 50%;
+      z-index: 2;
+      width: 34%;
+      color: var(--gold);
+      transform: translate(-50%, -50%);
+      filter: drop-shadow(0 0 12px rgba(201, 162, 39, 0.55));
+    }
+
+    .artifact__lock svg {
+      width: 100%;
+      height: auto;
+    }
+
+    .artifact__mask {
+      position: absolute;
+      inset: auto 0.5rem 0.7rem;
+      z-index: 2;
+      text-align: center;
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.12em;
+      color: var(--text-muted);
+      filter: blur(1.6px);
+      overflow-wrap: anywhere;
+    }
+
+    /* ---------- Подписка ---------- */
+    .subscribe {
+      align-items: center;
+      text-align: center;
+      padding-block: clamp(2rem, 1.5rem + 3vw, 3.5rem);
+      background:
+        radial-gradient(80% 120% at 50% 0%, rgba(123, 44, 191, 0.22), transparent 70%),
+        var(--surface);
+    }
+
+    .subscribe .lead {
+      margin: 0 auto 1.75rem;
+    }
+
+    .subscribe__actions {
+      justify-content: center;
+    }
+  </style>
+
+  <!-- i18n подключается БЕЗ defer: словарь страницы регистрируется до перевода DOM -->
+  <script src="js/i18n.js"></script>
+  <script>
+    GildspineI18n.extend({
+      ru: {
+        'book.meta.title': '«Первая частота» — книга GILDSPINE',
+        'book.meta.description': '«Первая частота» — первая книга серии GILDSPINE: тёмное фэнтези о музыке как оружии. Читать отрывок, купить, подписаться на новые главы.',
+
+        'book.volume': 'Книга',
+        'book.available': 'Доступна',
+        'book.read.excerpt': 'Читать отрывок (Глава 1)',
+        'book.read.full': 'Читать полностью',
+        'book.read.platform': 'Полная версия: {platform}',
+        'book.buy.label': 'Купить',
+        'book.buy.litres': 'Купить на ЛитРес',
+        'book.buy.ozon': 'Ozon',
+        'book.buy.wb': 'Wildberries',
+
+        'book.chapters.title': 'Главы первой книги',
+        'book.chapters.chapter': 'Глава',
+        'book.chapters.read': 'Читать',
+        'book.chapters.soon': 'Скоро',
+        'book.chapters.minutes': '{n} мин чтения',
+
+        'book.series.title': 'Серия Gildspine (10 книг)',
+        'book.series.lead': 'Десять томов — десять частот. Первая уже звучит, вторая на подходе, остальные скрыты в зашифрованных архивах.',
+        'book.series.announce': 'Анонс',
+        'book.series.soon': 'Скоро',
+        'book.series.excerpt': 'Читать отрывок',
+        'book.series.lockedAria': 'Книга {n} засекречена',
+
+        'book.subscribe.title': 'Подписка на новые главы',
+        'book.subscribe.text': 'Новые главы и анонсы выходят в Telegram первыми. Подпишитесь на канал — и не пропустите следующую ноту.',
+        'book.subscribe.ru': 'Telegram (RU)',
+        'book.subscribe.global': 'Telegram (Global)',
+
+        'footer.docsTitle': 'Документы',
+        'footer.legal': 'Правовая информация',
+        'footer.privacy': 'Конфиденциальность',
+        'footer.terms': 'Условия использования'
+      },
+      en: {
+        'book.meta.title': '“The First Frequency” — a GILDSPINE book',
+        'book.meta.description': '“The First Frequency” is book one of the GILDSPINE series: dark fantasy about music as a weapon. Read an excerpt, buy the book, subscribe to new chapters.',
+
+        'book.volume': 'Book',
+        'book.available': 'Available',
+        'book.read.excerpt': 'Read excerpt (Chapter 1)',
+        'book.read.full': 'Read in full',
+        'book.read.platform': 'Full version: {platform}',
+        'book.buy.label': 'Buy',
+        'book.buy.litres': 'Buy on LitRes',
+        'book.buy.ozon': 'Ozon',
+        'book.buy.wb': 'Wildberries',
+
+        'book.chapters.title': 'Chapters of book one',
+        'book.chapters.chapter': 'Chapter',
+        'book.chapters.read': 'Read',
+        'book.chapters.soon': 'Soon',
+        'book.chapters.minutes': '{n} min read',
+
+        'book.series.title': 'The Gildspine series (10 books)',
+        'book.series.lead': 'Ten volumes, ten frequencies. The first one already sounds, the second is on its way, the rest are hidden in encrypted archives.',
+        'book.series.announce': 'Announced',
+        'book.series.soon': 'Soon',
+        'book.series.excerpt': 'Read excerpt',
+        'book.series.lockedAria': 'Book {n} is classified',
+
+        'book.subscribe.title': 'Subscribe to new chapters',
+        'book.subscribe.text': 'New chapters and announcements land in Telegram first. Join the channel — and don’t miss the next note.',
+        'book.subscribe.ru': 'Telegram (RU)',
+        'book.subscribe.global': 'Telegram (Global)',
+
+        'footer.docsTitle': 'Documents',
+        'footer.legal': 'Legal information',
+        'footer.privacy': 'Privacy',
+        'footer.terms': 'Terms of use'
+      }
+    });
+  </script>
+  <script src="js/data.js" defer></script>
+</head>
+
+<body id="top">
+
+  <a class="skip-link" href="#main" data-i18n="a11y.skip">Перейти к содержимому</a>
+
+  <!-- ======================= ШАПКА ======================= -->
+  <header class="site-header">
+    <div class="container header__inner">
+      <input type="checkbox" id="nav-toggle" class="nav-toggle"
+             aria-label="Открыть или закрыть меню" data-i18n-attr="aria-label:nav.toggle">
+
+      <a class="logo" href="index.html" aria-label="GILDSPINE — Stay Gold">
+        <span class="logo__name">GILDSPINE</span>
+        <span class="logo__slogan">Stay Gold</span>
+      </a>
+
+      <div class="header__controls">
+        <div class="lang-switch" role="group" aria-label="Выбор языка" data-i18n-attr="aria-label:lang.label">
+          <button type="button" class="lang-btn" data-set-lang="ru">RU</button>
+          <button type="button" class="lang-btn" data-set-lang="en">EN</button>
+        </div>
+        <label for="nav-toggle" class="burger" aria-hidden="true">
+          <span class="burger__bar"></span>
+          <span class="burger__bar"></span>
+          <span class="burger__bar"></span>
+        </label>
+      </div>
+
+      <nav class="main-nav" aria-label="Основная навигация" data-i18n-attr="aria-label:nav.main">
+        <ul class="nav-list">
+          <li><a class="nav-link" href="index.html" data-i18n="nav.home">Главная</a></li>
+          <li><a class="nav-link" href="music.html" data-i18n="nav.music">Музыка</a></li>
+          <li><a class="nav-link" href="book.html" aria-current="page" data-i18n="nav.book">Книга</a></li>
+          <li><a class="nav-link" href="lore.html" data-i18n="nav.universe">Вселенная</a></li>
+          <li><a class="nav-link" href="media.html" data-i18n="nav.media">Медиа</a></li>
+          <li><a class="nav-link" href="donate.html" data-i18n="nav.support">Поддержать</a></li>
+          <li><a class="nav-link" href="about.html" data-i18n="nav.about">О проекте</a></li>
+          <li><a class="nav-link" href="contact.html" data-i18n="nav.contact">Связаться</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+
+    <!-- ======================= КНИГА 1 ======================= -->
+    <section class="book-hero" id="first-book" aria-label="Первая книга">
+      <div class="container">
+        <div class="split" id="book-main"></div>
+      </div>
+    </section>
+
+    <!-- ======================= ГЛАВЫ ======================= -->
+    <section class="section section--alt" id="chapters" aria-labelledby="chapters-title">
+      <div class="container container--narrow">
+        <div class="section__head">
+          <h2 class="section__title" id="chapters-title" data-i18n="book.chapters.title">Главы первой книги</h2>
+        </div>
+        <ol class="chapter-list" id="chapter-list"></ol>
+      </div>
+    </section>
+
+    <!-- ======================= СЕРИЯ ======================= -->
+    <section class="section" id="series" aria-labelledby="series-title">
+      <div class="container">
+        <div class="section__head">
+          <h2 class="section__title" id="series-title" data-i18n="book.series.title">Серия Gildspine (10 книг)</h2>
+          <p class="lead" data-i18n="book.series.lead">Десять томов — десять частот. Первая уже звучит, вторая на подходе, остальные скрыты в зашифрованных архивах.</p>
+        </div>
+        <div class="series-grid" id="series-grid"></div>
+      </div>
+    </section>
+
+    <!-- ======================= ПОДПИСКА ======================= -->
+    <section class="section" id="subscribe" aria-labelledby="subscribe-title" style="padding-top:0">
+      <div class="container">
+        <div class="card card--neon subscribe">
+          <div class="section__head section__head--center">
+            <h2 class="section__title" id="subscribe-title" data-i18n="book.subscribe.title">Подписка на новые главы</h2>
+          </div>
+          <p class="lead" data-i18n="book.subscribe.text">Новые главы и анонсы выходят в Telegram первыми. Подпишитесь на канал — и не пропустите следующую ноту.</p>
+          <div class="cluster subscribe__actions">
+            <a class="btn btn--solid btn--lg" id="sub-ru" target="_blank" rel="noopener noreferrer" data-i18n="book.subscribe.ru">Telegram (RU)</a>
+            <a class="btn btn--neon btn--lg" id="sub-global" target="_blank" rel="noopener noreferrer" data-i18n="book.subscribe.global">Telegram (Global)</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ======================= ПОДВАЛ ======================= -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer__grid">
+
+        <div class="footer__brand">
+          <a class="logo" href="index.html" aria-label="GILDSPINE">GILDSPINE</a>
+          <p class="footer__slogan" data-i18n="footer.slogan">Stay Gold</p>
+          <p class="footer__text" data-i18n="footer.description">Тёмное фэнтези в музыке и литературе. Золото не тускнеет — даже во тьме.</p>
+        </div>
+
+        <nav aria-label="Навигация по сайту" data-i18n-attr="aria-label:footer.navTitle">
+          <h2 class="footer__title" data-i18n="footer.navTitle">Навигация</h2>
+          <ul class="footer__links">
+            <li><a href="index.html" data-i18n="nav.home">Главная</a></li>
+            <li><a href="music.html" data-i18n="nav.music">Музыка</a></li>
+            <li><a href="book.html" data-i18n="nav.book">Книга</a></li>
+            <li><a href="lore.html" data-i18n="nav.universe">Вселенная</a></li>
+            <li><a href="media.html" data-i18n="nav.media">Медиа</a></li>
+            <li><a href="donate.html" data-i18n="nav.support">Поддержать</a></li>
+            <li><a href="about.html" data-i18n="nav.about">О проекте</a></li>
+            <li><a href="contact.html" data-i18n="nav.contact">Связаться</a></li>
+          </ul>
+        </nav>
+
+        <nav aria-label="Документы" data-i18n-attr="aria-label:footer.docsTitle">
+          <h2 class="footer__title" data-i18n="footer.docsTitle">Документы</h2>
+          <ul class="footer__links">
+            <li><a href="legal.html" data-i18n="footer.legal">Правовая информация</a></li>
+            <li><a href="legal.html#privacy" data-i18n="footer.privacy">Конфиденциальность</a></li>
+            <li><a href="legal.html#terms" data-i18n="footer.terms">Условия использования</a></li>
+          </ul>
+        </nav>
+
+      </div>
+
+      <div class="footer__bottom">
+        <p>© <span data-year>2026</span> Gildspine. <span data-i18n="footer.rights">Все права защищены.</span></p>
+        <a class="footer__top-link" href="#top" data-i18n="footer.backToTop">Наверх</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ======================= СКРИПТ СТРАНИЦЫ ======================= -->
+  <script>
+    /* Рендер страницы книги из js/data.js: главный блок, главы, серия из 10 томов.
+       Блоки перерисовываются при смене языка. */
+    window.addEventListener('DOMContentLoaded', function () {
+      'use strict';
+
+      var I18n = window.GildspineI18n;
+      var D = window.GildspineData;
+      if (!I18n || !D) return;
+
+      var book = D.getBookById('book-1');
+      if (!book) return;
+
+      var SIGIL =
+        '<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">' +
+        '<path d="M32 4 L52 32 L32 60 L12 32 Z"/>' +
+        '<path d="M32 4 V60 M12 32 H52" opacity=".55"/>' +
+        '<path d="M32 17 L42 32 L32 47 L22 32 Z" opacity=".8"/>' +
+        '</svg>';
+
+      var LOCK =
+        '<svg viewBox="0 0 48 56" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true">' +
+        '<rect x="7" y="24" width="34" height="27" rx="3"/>' +
+        '<path d="M14 24v-7a10 10 0 0 1 20 0v7"/>' +
+        '<circle cx="24" cy="36" r="3" fill="currentColor"/>' +
+        '<path d="M24 39v6"/>' +
+        '</svg>';
+
+      var ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
+
+      /* ---------- Хелперы ---------- */
+      function t(key) {
+        var v = I18n.t(key);
+        return v === undefined ? key : v;
+      }
+
+      function el(tag, className, text) {
+        var node = document.createElement(tag);
+        if (className) node.className = className;
+        if (text !== undefined && text !== null) node.textContent = text;
+        return node;
+      }
+
+      function externalLink(node, url) {
+        node.href = url;
+        node.target = '_blank';
+        node.rel = 'noopener noreferrer';
+        return node;
+      }
+
+      function pad(n) { return (n < 10 ? '0' : '') + n; }
+
+      function tagList(items) {
+        var ul = el('ul', 'tags');
+        items.forEach(function (item) {
+          var li = el('li');
+          li.appendChild(el('span', 'tag' + (item.cls ? ' ' + item.cls : ''), item.text));
+          ul.appendChild(li);
+        });
+        return ul;
+      }
+
+      /* Ссылка на полную версию: book.fullRead, иначе — ЛитРес */
+      function fullReadInfo(b) {
+        if (b.fullRead && b.fullRead.url) return b.fullRead;
+        if (b.shops && b.shops.litres) return { platform: 'ЛитРес', url: b.shops.litres };
+        return null;
+      }
+
+      /* ---------- Обложка-переплёт с заглушкой ---------- */
+      function bookCover(src, title, number) {
+        var cover = el('div', 'book-cover');
+        var spine = el('span', 'book-cover__spine');
+        spine.setAttribute('aria-hidden', 'true');
+        cover.appendChild(spine);
+
+        function placeholder() {
+          var old = cover.querySelector('img');
+          if (old) cover.removeChild(old);
+          var art = el('div', 'book-cover__art');
+          art.setAttribute('role', 'img');
+          art.setAttribute('aria-label', title);
+          var sigil = el('div', 'book-cover__sigil');
+          sigil.innerHTML = SIGIL; // константная разметка
+          art.appendChild(sigil);
+          art.appendChild(el('span', 'book-cover__num', ROMAN[number - 1] || String(number)));
+          art.appendChild(el('span', 'book-cover__title', title));
+          art.appendChild(el('span', 'book-cover__brand', 'GILDSPINE'));
+          cover.appendChild(art);
+        }
+
+        if (!src) {
+          placeholder();
+          return cover;
+        }
+        var img = new Image();
+        img.alt = title;
+        img.decoding = 'async';
+        img.addEventListener('error', placeholder);
+        cover.appendChild(img);
+        img.src = src;
+        return cover;
+      }
+
+      /* ---------- Главный блок ---------- */
+      function renderMain() {
+        var host = document.getElementById('book-main');
+        host.textContent = '';
+
+        var title = D.tr(book.title);
+
+        // левая колонка: обложка
+        var coverBox = el('div', 'book-hero__cover');
+        coverBox.appendChild(bookCover(book.cover, title, book.number));
+        host.appendChild(coverBox);
+
+        // правая колонка
+        var body = el('div', 'book-hero__body');
+
+        var tags = [{ text: t('book.volume') + ' ' + book.number + ' / ' + D.books.length }];
+        if (book.status === 'available') tags.push({ text: t('book.available'), cls: 'tag--blood' });
+        var tagsEl = tagList(tags);
+        tagsEl.classList.add('book-hero__tags');
+        body.appendChild(tagsEl);
+
+        body.appendChild(el('h1', 'book-hero__title', title));
+
+        var text = el('div', 'book-hero__text');
+        (D.tr(book.annotation) || []).forEach(function (p) {
+          text.appendChild(el('p', '', p));
+        });
+        body.appendChild(text);
+
+        var actions = el('div', 'book-actions');
+
+        // основные кнопки
+        var primary = el('div', null);
+        var row = el('div', 'cluster');
+        var excerpt = el('a', 'btn btn--lg', t('book.read.excerpt'));
+        excerpt.href = 'chapter.html';
+        row.appendChild(excerpt);
+
+        var full = fullReadInfo(book);
+        if (full) {
+          row.appendChild(externalLink(el('a', 'btn btn--solid btn--lg btn--accent', t('book.read.full')), full.url));
+        }
+        primary.appendChild(row);
+        if (full && full.platform) {
+          primary.appendChild(el('p', 'meta book-actions__note', t('book.read.platform').replace('{platform}', full.platform)));
+        }
+        actions.appendChild(primary);
+
+        // покупка
+        var shops = book.shops || {};
+        var buy = [
+          { url: shops.litres, key: 'book.buy.litres' },
+          { url: shops.ozon, key: 'book.buy.ozon' },
+          { url: shops.wildberries, key: 'book.buy.wb' }
+        ].filter(function (s) { return !!s.url; });
+
+        if (buy.length) {
+          var buyBox = el('div', 'buy-row');
+          buyBox.appendChild(el('p', 'meta buy-row__label', t('book.buy.label')));
+          var buyRow = el('div', 'cluster');
+          buy.forEach(function (s) {
+            buyRow.appendChild(externalLink(el('a', 'btn btn--sm', t(s.key)), s.url));
+          });
+          buyBox.appendChild(buyRow);
+          actions.appendChild(buyBox);
+        }
+
+        body.appendChild(actions);
+        host.appendChild(body);
+
+        document.title = title + ' — GILDSPINE';
+      }
+
+      /* ---------- Список глав ---------- */
+      function renderChapters() {
+        var list = document.getElementById('chapter-list');
+        list.textContent = '';
+
+        D.getChaptersByBook(book.id).forEach(function (ch) {
+          var available = ch.status === 'available';
+          var li = el('li', 'chapter-item' + (available ? '' : ' is-soon'));
+
+          li.appendChild(el('span', 'chapter-item__num', pad(ch.number)));
+
+          var main = el('div', 'chapter-item__main');
+          var heading = el('h3', 'chapter-item__title');
+          var label = t('book.chapters.chapter') + ' ' + ch.number + '. ' + D.tr(ch.title);
+          if (available) {
+            var link = el('a', '', label);
+            link.href = 'chapter.html?id=' + encodeURIComponent(ch.id);
+            heading.appendChild(link);
+          } else {
+            heading.textContent = label;
+          }
+          main.appendChild(heading);
+          if (available && ch.readingMinutes) {
+            main.appendChild(el('p', 'meta', t('book.chapters.minutes').replace('{n}', String(ch.readingMinutes))));
+          }
+          li.appendChild(main);
+
+          if (available) {
+            var read = el('a', 'btn btn--sm', t('book.chapters.read'));
+            read.href = 'chapter.html?id=' + encodeURIComponent(ch.id);
+            li.appendChild(read);
+          } else {
+            li.appendChild(el('span', 'tag', t('book.chapters.soon')));
+          }
+          list.appendChild(li);
+        });
+      }
+
+      /* ---------- Серия: артефакты ---------- */
+      // детерминированное «шифрованное» поле символов (одинаковое при каждой загрузке)
+      function glyphField(seedStr, rows, cols) {
+        var charset = 'ᚠᚢᚦᚨᚱᚲᚷᚹᚺᚾᛁᛃᛇᛈᛉᛊᛏᛒᛖᛗᛚᛜᛞᛟ▓▒░◆◇✕01';
+        var seed = 0;
+        for (var i = 0; i < seedStr.length; i++) seed = (seed * 31 + seedStr.charCodeAt(i)) >>> 0;
+        function rnd() {
+          seed = (seed * 1664525 + 1013904223) >>> 0;
+          return seed / 4294967296;
+        }
+        var lines = [];
+        for (var r = 0; r < rows; r++) {
+          var line = '';
+          for (var c = 0; c < cols; c++) line += charset.charAt(Math.floor(rnd() * charset.length));
+          lines.push(line);
+        }
+        return lines.join('\n');
+      }
+
+      function seriesCardAvailable(b) {
+        var title = D.tr(b.title);
+        var card = el('article', 'series-card series-card--active');
+        card.appendChild(bookCover(b.cover, title, b.number));
+        card.appendChild(el('p', 'series-card__label', t('book.volume').toUpperCase() + ' ' + pad(b.number)));
+        card.appendChild(el('h3', 'series-card__title', title));
+
+        var foot = el('div', 'series-card__foot');
+        foot.appendChild(tagList([{ text: t('book.available'), cls: 'tag--blood' }]));
+        var link = el('a', 'btn btn--sm', t('book.series.excerpt'));
+        link.href = 'chapter.html';
+        foot.appendChild(link);
+        card.appendChild(foot);
+        return card;
+      }
+
+      function seriesCardSoon(b) {
+        var title = D.tr(b.title);
+        var card = el('article', 'series-card series-card--soon');
+        card.appendChild(bookCover(b.cover, title, b.number));
+        card.appendChild(el('p', 'series-card__label', t('book.volume').toUpperCase() + ' ' + pad(b.number)));
+        card.appendChild(el('h3', 'series-card__title', title));
+
+        var teaser = (D.tr(b.annotation) || [])[0];
+        if (teaser) card.appendChild(el('p', 'series-card__text', teaser));
+
+        var foot = el('div', 'series-card__foot');
+        foot.appendChild(tagList([
+          { text: t('book.series.announce'), cls: 'tag--neon' },
+          { text: t('book.series.soon') }
+        ]));
+        card.appendChild(foot);
+        return card;
+      }
+
+      function seriesCardLocked(b) {
+        var card = el('article', 'series-card series-card--locked');
+        card.setAttribute('role', 'group');
+        card.setAttribute('aria-label', t('book.series.lockedAria').replace('{n}', String(b.number)));
+
+        var artifact = el('div', 'artifact');
+        artifact.setAttribute('aria-hidden', 'true');
+        artifact.appendChild(el('pre', 'artifact__glyphs', glyphField(b.cipher || b.id, 14, 11)));
+        var lock = el('div', 'artifact__lock');
+        lock.innerHTML = LOCK; // константная разметка
+        artifact.appendChild(lock);
+        artifact.appendChild(el('div', 'artifact__mask', D.tr(b.title)));
+        card.appendChild(artifact);
+
+        card.appendChild(el('p', 'series-card__label', t('book.volume').toUpperCase() + ' ' + pad(b.number) + ' // ' + (b.cipher || '')));
+
+        var foot = el('div', 'series-card__foot');
+        var corrupted = b.number % 2 === 1; // 3,5,7,9 — DATA CORRUPTED; 4,6,8,10 — LOCKED
+        foot.appendChild(el('p', 'status ' + (corrupted ? 'status--corrupted' : 'status--locked'),
+          corrupted ? 'DATA CORRUPTED' : 'LOCKED'));
+        if (b.hint) foot.appendChild(el('p', 'series-card__text', D.tr(b.hint)));
+        card.appendChild(foot);
+        return card;
+      }
+
+      function renderSeries() {
+        var grid = document.getElementById('series-grid');
+        grid.textContent = '';
+        D.books.forEach(function (b) {
+          var card;
+          if (b.status === 'available') card = seriesCardAvailable(b);
+          else if (b.status === 'soon') card = seriesCardSoon(b);
+          else card = seriesCardLocked(b);
+          grid.appendChild(card);
+        });
+      }
+
+      /* ---------- Подписка ---------- */
+      function renderSubscribe() {
+        var s = D.links.social;
+        var ru = document.getElementById('sub-ru');
+        var gl = document.getElementById('sub-global');
+        if (s.telegramRu) ru.href = s.telegramRu.url;
+        if (s.telegramGlobal) gl.href = s.telegramGlobal.url;
+      }
+
+      function renderAll() {
+        renderMain();
+        renderChapters();
+        renderSeries();
+      }
+
+      renderSubscribe();
+      renderAll();
+      document.addEventListener('gildspine:languagechange', renderAll);
+    });
+  </script>
+</body>
+</html>

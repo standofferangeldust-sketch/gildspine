@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0a0a0f">
+
+  <title data-i18n="lore.meta.title">Вселенная GILDSPINE — Четыре Бездны и персонажи</title>
+  <meta name="description"
+        content="Вселенная GILDSPINE: Четыре Бездны, золотой хребет и восемь героев тёмного фэнтези. Stay Gold."
+        data-i18n-attr="content:lore.meta.description">
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="GILDSPINE">
+  <meta property="og:title" content="GILDSPINE — The Universe">
+  <meta property="og:description" content="The Four Abysses, the golden spine and eight heroes of dark fantasy.">
+  <meta property="og:image" content="assets/images/og-cover.jpg">
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230a0a0f'/%3E%3Cpath d='M16 3l9 13-9 13-9-13z' fill='none' stroke='%23c9a227' stroke-width='2'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="css/style.css">
+
+  <!-- Стили страницы вселенной (при желании перенесите в css/style.css) -->
+  <style>
+    /* ---------- Шапка: логотип + слоган ---------- */
+    .logo {
+      display: inline-flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      line-height: 1;
+    }
+
+    .logo__slogan {
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      font-weight: 400;
+      letter-spacing: 0.42em;
+      text-transform: none;
+      color: var(--text-muted);
+      text-shadow: none;
+    }
+
+    /* ---------- Четыре Бездны: схема ---------- */
+    .abyss-map {
+      position: relative;
+    }
+
+    .abyss-cards {
+      position: relative;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.25rem;
+    }
+
+    /* Центральный золотой хребет */
+    .abyss-map__core {
+      display: none;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      z-index: 3;
+      width: 88px;
+      height: 88px;
+      place-items: center;
+      color: var(--gold);
+      background: radial-gradient(circle, #1b170d, var(--bg));
+      border: 1px solid var(--gold);
+      border-radius: 50%;
+      box-shadow: var(--glow-gold);
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+    }
+
+    .abyss-map__core svg {
+      width: 48px;
+      height: 48px;
+    }
+
+    @media (min-width: 768px) {
+      .abyss-cards {
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+      }
+
+      .abyss-map__core {
+        display: grid;
+      }
+
+      /* Линии «хребта», соединяющие миры */
+      .abyss-map::before,
+      .abyss-map::after {
+        content: '';
+        position: absolute;
+        z-index: 0;
+        background: linear-gradient(90deg, transparent, var(--gold), transparent);
+        opacity: 0.5;
+        pointer-events: none;
+      }
+
+      .abyss-map::before {
+        top: 50%;
+        left: 0;
+        right: 0;
+        height: 1px;
+      }
+
+      .abyss-map::after {
+        top: 0;
+        bottom: 0;
+        left: 50%;
+        width: 1px;
+        background: linear-gradient(180deg, transparent, var(--gold), transparent);
+      }
+    }
+
+    .abyss-card {
+      --abyss: #c9a227;
+      --abyss-glow: rgba(201, 162, 39, 0.5);
+      position: relative;
+      z-index: 1;
+      padding: 1.5rem 1.4rem 1.3rem;
+      overflow: hidden;
+      background: var(--surface);
+      border: 1px solid var(--border-gold);
+      border-top: 3px solid var(--abyss);
+      border-radius: var(--radius);
+      transition: border-color var(--t-med) var(--ease), box-shadow var(--t-med) var(--ease);
+    }
+
+    /* Цветовое свечение Бездны */
+    .abyss-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(120% 90% at 0% 0%, var(--abyss-glow), transparent 62%);
+      opacity: 0.28;
+      transition: opacity var(--t-med) var(--ease);
+      pointer-events: none;
+    }
+
+    .abyss-card:hover::before {
+      opacity: 0.42;
+    }
+
+    .abyss-card.is-active {
+      border-color: var(--abyss);
+      box-shadow: 0 0 30px var(--abyss-glow);
+    }
+
+    .abyss-card.is-active::before {
+      opacity: 0.55;
+    }
+
+    .abyss-card:has(.abyss-card__toggle:focus-visible) {
+      outline: 2px solid var(--gold-bright);
+      outline-offset: 3px;
+    }
+
+    .abyss-card > * {
+      position: relative;
+    }
+
+    .abyss-card__color {
+      display: flex;
+      align-items: center;
+      gap: 0.55rem;
+      margin-bottom: 0.9rem;
+      font-family: var(--font-mono);
+      font-size: var(--fs-xs);
+      letter-spacing: 0.04em;
+      color: var(--text-muted);
+    }
+
+    .abyss-card__dot {
+      width: 11px;
+      height: 11px;
+      background: var(--abyss);
+      border-radius: 50%;
+      box-shadow: 0 0 12px var(--abyss-glow), 0 0 0 3px rgba(255, 255, 255, 0.05);
+    }
+
+    .abyss-card__title {
+      margin-bottom: 0.4rem;
+      font-size: var(--fs-lg);
+    }
+
+    /* Вся карточка кликабельна через кнопку в заголовке */
+    .abyss-card__toggle {
+      padding: 0;
+      font: inherit;
+      letter-spacing: inherit;
+      text-align: left;
+      text-transform: inherit;
+      color: inherit;
+      background: none;
+      border: 0;
+      cursor: pointer;
+    }
+
+    .abyss-card__toggle::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+    }
+
+    .abyss-card__epithet {
+      margin-bottom: 0.9rem;
+      font-family: var(--font-mono);
+      font-size: var(--fs-xs);
+      color: var(--gold);
+    }
+
+    .abyss-card__text {
+      margin-bottom: 1.1rem;
+      color: var(--text-muted);
+      font-size: var(--fs-sm);
+    }
+
+    .abyss-card__members {
+      margin: 0;
+      padding-top: 0.9rem;
+      border-top: 1px solid var(--border-gold-soft);
+    }
+
+    /* ---------- Фильтр персонажей ---------- */
+    .filter-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .filter-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      min-height: 40px;
+      padding: 0.3rem 0.9rem;
+      font-family: var(--font-mono);
+      font-size: var(--fs-xs);
+      letter-spacing: 0.03em;
+      color: var(--text-muted);
+      background: transparent;
+      border: 1px solid var(--border-gold);
+      border-radius: 2px;
+      transition:
+        color var(--t-fast) var(--ease),
+        border-color var(--t-fast) var(--ease),
+        background-color var(--t-fast) var(--ease),
+        box-shadow var(--t-med) var(--ease);
+    }
+
+    .filter-chip__dot {
+      width: 9px;
+      height: 9px;
+      background: var(--chip, var(--gold));
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--chip-glow, rgba(201, 162, 39, 0.5));
+    }
+
+    .filter-chip:hover {
+      color: var(--gold-bright);
+      border-color: var(--border-gold-strong);
+    }
+
+    .filter-chip[aria-pressed='true'] {
+      color: var(--gold);
+      background: rgba(201, 162, 39, 0.12);
+      border-color: var(--gold);
+      box-shadow: var(--glow-gold-soft);
+    }
+
+    .chars-count {
+      margin-bottom: 1.5rem;
+    }
+
+    /* ---------- Карточка персонажа ---------- */
+    .char-card {
+      --abyss: #c9a227;
+      --abyss-glow: rgba(201, 162, 39, 0.5);
+      border-top: 2px solid var(--abyss);
+    }
+
+    .char-card .card__media {
+      aspect-ratio: 3 / 4;
+    }
+
+    .portrait {
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+
+    .portrait img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .portrait::after {
+      content: '';
+      position: absolute;
+      inset: 55% 0 0 0;
+      background: linear-gradient(180deg, transparent, rgba(18, 18, 26, 0.9));
+      pointer-events: none;
+    }
+
+    .portrait--placeholder {
+      display: grid;
+      place-items: center;
+      color: var(--abyss);
+      background:
+        radial-gradient(circle at 50% 38%, var(--abyss-glow), transparent 62%),
+        repeating-linear-gradient(45deg, rgba(201, 162, 39, 0.05) 0 1px, transparent 1px 12px),
+        linear-gradient(170deg, #16141c, #0a0a0f);
+    }
+
+    .portrait__sil {
+      width: 62%;
+      filter: drop-shadow(0 0 16px var(--abyss-glow));
+    }
+
+    .portrait__sil svg {
+      width: 100%;
+      height: auto;
+    }
+
+    .portrait__initial {
+      position: absolute;
+      right: 0.7rem;
+      bottom: 0.2rem;
+      z-index: 1;
+      font-family: var(--font-display);
+      font-size: 5rem;
+      font-weight: 700;
+      line-height: 1;
+      color: var(--gold);
+      opacity: 0.12;
+    }
+
+    .char-card__role {
+      margin-bottom: 0.4rem;
+      color: var(--gold);
+    }
+
+    .char-card__name {
+      margin-bottom: 0.7rem;
+      font-size: var(--fs-lg);
+    }
+
+    .char-card__abyss {
+      margin-bottom: 0.9rem;
+    }
+
+    .tag--abyss {
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.03);
+      border-color: var(--abyss);
+    }
+
+    .tag--abyss::before {
+      content: '';
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      margin-right: 0.5rem;
+      background: var(--abyss);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--abyss-glow);
+    }
+
+    /* ---------- Архив: карта и хронология ---------- */
+    .archive {
+      display: grid;
+      gap: var(--gap);
+      grid-template-columns: 1fr;
+    }
+
+    @media (min-width: 960px) {
+      .archive {
+        grid-template-columns: 1.7fr 1fr;
+        align-items: start;
+      }
+    }
+
+    .archive__map {
+      position: relative;
+      margin: 0;
+      overflow: hidden;
+      aspect-ratio: 16 / 10;
+      background:
+        radial-gradient(60% 60% at 50% 50%, rgba(123, 44, 191, 0.2), transparent 70%),
+        repeating-linear-gradient(0deg, rgba(201, 162, 39, 0.08) 0 1px, transparent 1px 40px),
+        repeating-linear-gradient(90deg, rgba(201, 162, 39, 0.08) 0 1px, transparent 1px 40px),
+        #0c0c12;
+      border: 1px solid var(--border-gold-strong);
+      border-radius: var(--radius);
+      box-shadow: var(--glow-gold-soft);
+    }
+
+    /* Когда появится арт карты: <img> занимает весь блок */
+    .archive__map > img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .archive__overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.6rem;
+      padding: 1rem;
+      text-align: center;
+    }
+
+    .archive__compass {
+      width: clamp(70px, 16vw, 120px);
+      color: var(--gold);
+      opacity: 0.85;
+      animation: compass-spin 90s linear infinite;
+      filter: drop-shadow(0 0 12px rgba(201, 162, 39, 0.4));
+    }
+
+    @keyframes compass-spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .archive__soon {
+      margin: 0;
+      font-family: var(--font-mono);
+      font-size: clamp(1rem, 0.8rem + 1.2vw, 1.6rem);
+      font-weight: 700;
+      letter-spacing: 0.3em;
+      color: var(--gold-bright);
+      text-shadow: 0 0 18px rgba(201, 162, 39, 0.55);
+    }
+
+    .archive__note {
+      max-width: 44ch;
+      margin: 0.2rem auto 0;
+      font-size: var(--fs-sm);
+      color: var(--text-muted);
+    }
+
+    /* Уголки рамки */
+    .archive__corner {
+      position: absolute;
+      z-index: 2;
+      width: 22px;
+      height: 22px;
+      border: 0 solid var(--gold);
+      opacity: 0.8;
+      pointer-events: none;
+    }
+
+    .archive__corner--tl { top: 10px; left: 10px; border-top-width: 2px; border-left-width: 2px; }
+    .archive__corner--tr { top: 10px; right: 10px; border-top-width: 2px; border-right-width: 2px; }
+    .archive__corner--bl { bottom: 10px; left: 10px; border-bottom-width: 2px; border-left-width: 2px; }
+    .archive__corner--br { bottom: 10px; right: 10px; border-bottom-width: 2px; border-right-width: 2px; }
+
+    /* Линия сканирования */
+    .archive__scan {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, rgba(201, 162, 39, 0.7), transparent);
+      box-shadow: 0 0 14px rgba(201, 162, 39, 0.5);
+      animation: archive-scan 6s linear infinite;
+      pointer-events: none;
+    }
+
+    @keyframes archive-scan {
+      from { top: 0; }
+      to { top: 100%; }
+    }
+
+    .archive__caption {
+      position: absolute;
+      inset: auto 0 0.7rem;
+      z-index: 2;
+      text-align: center;
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      color: var(--text-dim);
+    }
+
+    /* Хронология */
+    .timeline-box {
+      padding: 1.4rem 1.4rem 1.2rem;
+    }
+
+    .timeline-box__title {
+      margin-bottom: 0.5rem;
+      font-size: var(--fs-md);
+    }
+
+    .timeline-box__note {
+      margin-bottom: 1.25rem;
+      font-size: var(--fs-sm);
+      color: var(--text-muted);
+    }
+
+    .timeline {
+      position: relative;
+      list-style: none;
+      padding-left: 1.5rem;
+    }
+
+    .timeline::before {
+      content: '';
+      position: absolute;
+      top: 6px;
+      bottom: 6px;
+      left: 5px;
+      width: 1px;
+      background: linear-gradient(180deg, var(--gold), rgba(201, 162, 39, 0.1));
+    }
+
+    .timeline__item {
+      position: relative;
+      padding-bottom: 1.1rem;
+    }
+
+    .timeline__item:last-child {
+      padding-bottom: 0;
+    }
+
+    .timeline__item::before {
+      content: '';
+      position: absolute;
+      top: 5px;
+      left: -1.5rem;
+      width: 11px;
+      height: 11px;
+      background: var(--bg);
+      border: 1px solid var(--gold);
+      transform: rotate(45deg);
+    }
+
+    .timeline__code {
+      margin: 0 0 0.2rem;
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.06em;
+      color: var(--blood-text);
+    }
+
+    .timeline__mask {
+      margin: 0;
+      font-family: var(--font-mono);
+      font-size: var(--fs-sm);
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+      filter: blur(1.8px);
+      user-select: none;
+    }
+  </style>
+
+  <!-- i18n подключается БЕЗ defer: словарь страницы регистрируется до перевода DOM -->
+  <script src="js/i18n.js"></script>
+  <script>
+    GildspineI18n.extend({
+      ru: {
+        'lore.meta.title': 'Вселенная GILDSPINE — Четыре Бездны и персонажи',
+        'lore.meta.description': 'Вселенная GILDSPINE: Четыре Бездны, золотой хребет и восемь героев тёмного фэнтези. Stay Gold.',
+        'lore.page.lead': 'Золотой хребет держит четыре мира. Узнайте, что скрывается в Безднах и кто из героев в какой из них пустил корни.',
+
+        'lore.abysses.title': 'Четыре Бездны',
+        'lore.abysses.lead': 'Выберите Бездну — и в галерее ниже останутся только её обитатели.',
+        'lore.abyss.select': 'Показать обитателей: {name}',
+        'lore.abyss.members': 'Обитатели',
+
+        'lore.chars.title': 'Галерея персонажей',
+        'lore.chars.lead': 'Восемь героев, четыре Бездны и одна частота, которая их связывает.',
+        'lore.chars.filter': 'Фильтр по Безднам',
+        'lore.chars.all': 'Все Бездны',
+        'lore.chars.count': 'Показано: {n} из {total}',
+        'lore.chars.abyss': 'Бездна',
+
+        'lore.map.title': 'Карта мира и хронология',
+        'lore.map.lead': 'Архив вселенной расшифровывается. Артефакты откроются по мере выхода книг.',
+        'lore.map.note': 'Карта вселенной ещё не восстановлена. Здесь появится арт мира четырёх Бездн.',
+        'lore.map.alt': 'Карта вселенной GILDSPINE',
+        'lore.timeline.title': 'Хронология',
+        'lore.timeline.note': 'Записи архива повреждены. Они откроются вместе с новыми томами.',
+        'lore.timeline.locked': 'Запись заархивирована',
+
+        'footer.docsTitle': 'Документы',
+        'footer.legal': 'Правовая информация',
+        'footer.privacy': 'Конфиденциальность',
+        'footer.terms': 'Условия использования'
+      },
+      en: {
+        'lore.meta.title': 'The GILDSPINE Universe — Four Abysses and characters',
+        'lore.meta.description': 'The GILDSPINE universe: the Four Abysses, the golden spine and eight heroes of dark fantasy. Stay Gold.',
+        'lore.page.lead': 'A golden spine holds four worlds together. Learn what hides in the Abysses and which hero took root in which one.',
+
+        'lore.abysses.title': 'The Four Abysses',
+        'lore.abysses.lead': 'Pick an Abyss — and the gallery below will show only its inhabitants.',
+        'lore.abyss.select': 'Show inhabitants: {name}',
+        'lore.abyss.members': 'Inhabitants',
+
+        'lore.chars.title': 'Character gallery',
+        'lore.chars.lead': 'Eight heroes, four Abysses and one frequency that binds them.',
+        'lore.chars.filter': 'Filter by Abyss',
+        'lore.chars.all': 'All Abysses',
+        'lore.chars.count': 'Showing {n} of {total}',
+        'lore.chars.abyss': 'Abyss',
+
+        'lore.map.title': 'World map & chronology',
+        'lore.map.lead': 'The universe archive is being decrypted. Artifacts will open as the books are released.',
+        'lore.map.note': 'The map of the universe has not been restored yet. Art of the world of the four Abysses will appear here.',
+        'lore.map.alt': 'Map of the GILDSPINE universe',
+        'lore.timeline.title': 'Chronology',
+        'lore.timeline.note': 'Archive records are corrupted. They will open together with new volumes.',
+        'lore.timeline.locked': 'Record archived',
+
+        'footer.docsTitle': 'Documents',
+        'footer.legal': 'Legal information',
+        'footer.privacy': 'Privacy',
+        'footer.terms': 'Terms of use'
+      }
+    });
+  </script>
+  <script src="js/data.js" defer></script>
+</head>
+
+<body id="top">
+
+  <a class="skip-link" href="#main" data-i18n="a11y.skip">Перейти к содержимому</a>
+
+  <!-- ======================= ШАПКА ======================= -->
+  <header class="site-header">
+    <div class="container header__inner">
+      <input type="checkbox" id="nav-toggle" class="nav-toggle"
+             aria-label="Открыть или закрыть меню" data-i18n-attr="aria-label:nav.toggle">
+
+      <a class="logo" href="index.html" aria-label="GILDSPINE — Stay Gold">
+        <span class="logo__name">GILDSPINE</span>
+        <span class="logo__slogan">Stay Gold</span>
+      </a>
+
+      <div class="header__controls">
+        <div class="lang-switch" role="group" aria-label="Выбор языка" data-i18n-attr="aria-label:lang.label">
+          <button type="button" class="lang-btn" data-set-lang="ru">RU</button>
+          <button type="button" class="lang-btn" data-set-lang="en">EN</button>
+        </div>
+        <label for="nav-toggle" class="burger" aria-hidden="true">
+          <span class="burger__bar"></span>
+          <span class="burger__bar"></span>
+          <span class="burger__bar"></span>
+        </label>
+      </div>
+
+      <nav class="main-nav" aria-label="Основная навигация" data-i18n-attr="aria-label:nav.main">
+        <ul class="nav-list">
+          <li><a class="nav-link" href="index.html" data-i18n="nav.home">Главная</a></li>
+          <li><a class="nav-link" href="music.html" data-i18n="nav.music">Музыка</a></li>
+          <li><a class="nav-link" href="book.html" data-i18n="nav.book">Книга</a></li>
+          <li><a class="nav-link" href="lore.html" aria-current="page" data-i18n="nav.universe">Вселенная</a></li>
+          <li><a class="nav-link" href="media.html" data-i18n="nav.media">Медиа</a></li>
+          <li><a class="nav-link" href="donate.html" data-i18n="nav.support">Поддержать</a></li>
+          <li><a class="nav-link" href="about.html" data-i18n="nav.about">О проекте</a></li>
+          <li><a class="nav-link" href="contact.html" data-i18n="nav.contact">Связаться</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+
+    <!-- ======================= ЗАГОЛОВОК ======================= -->
+    <section class="page-hero">
+      <div class="container">
+        <h1 class="page-hero__title" data-i18n="nav.universe">Вселенная</h1>
+        <p class="lead" data-i18n="lore.page.lead">Золотой хребет держит четыре мира. Узнайте, что скрывается в Безднах и кто из героев в какой из них пустил корни.</p>
+      </div>
+    </section>
+
+    <!-- ======================= ЧЕТЫРЕ БЕЗДНЫ ======================= -->
+    <section class="section" id="abysses" aria-labelledby="abysses-title">
+      <div class="container">
+        <div class="section__head">
+          <h2 class="section__title" id="abysses-title" data-i18n="lore.abysses.title">Четыре Бездны</h2>
+          <p class="lead" data-i18n="lore.abysses.lead">Выберите Бездну — и в галерее ниже останутся только её обитатели.</p>
+        </div>
+
+        <div class="abyss-map">
+          <div class="abyss-map__core" aria-hidden="true">
+            <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.6">
+              <path d="M32 4 L52 32 L32 60 L12 32 Z"/>
+              <path d="M32 4 V60 M12 32 H52" opacity=".55"/>
+              <path d="M32 17 L42 32 L32 47 L22 32 Z" opacity=".8"/>
+            </svg>
+          </div>
+          <div class="abyss-cards" id="abyss-cards"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================= ПЕРСОНАЖИ ======================= -->
+    <section class="section section--alt" id="characters" aria-labelledby="characters-title">
+      <div class="container">
+        <div class="section__head">
+          <h2 class="section__title" id="characters-title" data-i18n="lore.chars.title">Галерея персонажей</h2>
+          <p class="lead" data-i18n="lore.chars.lead">Восемь героев, четыре Бездны и одна частота, которая их связывает.</p>
+        </div>
+
+        <div class="filter-chips" id="char-filters" role="group" aria-label="Фильтр по Безднам"
+             data-i18n-attr="aria-label:lore.chars.filter"></div>
+        <p class="meta chars-count" id="chars-count" role="status" aria-live="polite"></p>
+
+        <div class="grid grid--4" id="char-grid"></div>
+      </div>
+    </section>
+
+    <!-- ======================= КАРТА И ХРОНОЛОГИЯ ======================= -->
+    <section class="section" id="archive" aria-labelledby="archive-title">
+      <div class="container">
+        <div class="section__head">
+          <h2 class="section__title" id="archive-title" data-i18n="lore.map.title">Карта мира и хронология</h2>
+          <p class="lead" data-i18n="lore.map.lead">Архив вселенной расшифровывается. Артефакты откроются по мере выхода книг.</p>
+        </div>
+
+        <div class="archive">
+
+          <!-- Карта: артефакт-заглушка.
+               КАК ВСТАВИТЬ АРТ КАРТЫ: добавьте внутрь <figure class="archive__map"> первым элементом
+                 <img src="assets/images/world-map.jpg" alt="Карта вселенной GILDSPINE" loading="lazy">
+               и удалите блоки .archive__overlay, .archive__scan и .archive__caption. -->
+          <figure class="archive__map" id="world-map">
+            <span class="archive__scan" aria-hidden="true"></span>
+            <span class="archive__corner archive__corner--tl" aria-hidden="true"></span>
+            <span class="archive__corner archive__corner--tr" aria-hidden="true"></span>
+            <span class="archive__corner archive__corner--bl" aria-hidden="true"></span>
+            <span class="archive__corner archive__corner--br" aria-hidden="true"></span>
+
+            <div class="archive__overlay">
+              <svg class="archive__compass" viewBox="0 0 120 120" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true">
+                <circle cx="60" cy="60" r="52" stroke-dasharray="2 5"/>
+                <circle cx="60" cy="60" r="36"/>
+                <path d="M60 4V116M4 60H116" opacity=".5"/>
+                <path d="M60 24 L78 60 L60 96 L42 60 Z"/>
+                <path d="M60 6 L64 22 L56 22 Z" fill="currentColor"/>
+              </svg>
+              <span class="tag tag--blood">ARCHIVE DATA</span>
+              <p class="archive__soon">COMING SOON</p>
+              <p class="archive__note" data-i18n="lore.map.note">Карта вселенной ещё не восстановлена. Здесь появится арт мира четырёх Бездн.</p>
+            </div>
+
+            <figcaption class="archive__caption" aria-hidden="true">COORDINATES: ▓▓▓.▓▓ // ▓▓▓.▓▓ · SIGNAL LOST</figcaption>
+          </figure>
+
+          <!-- Хронология: зашифрованные записи -->
+          <div class="card timeline-box">
+            <h3 class="timeline-box__title" data-i18n="lore.timeline.title">Хронология</h3>
+            <p class="timeline-box__note" data-i18n="lore.timeline.note">Записи архива повреждены. Они откроются вместе с новыми томами.</p>
+            <ol class="timeline">
+              <li class="timeline__item">
+                <p class="timeline__code" aria-hidden="true">ENTRY 01 // LOCKED</p>
+                <p class="timeline__mask" aria-hidden="true">▓▓▓▓▓▓▓ ▓▓▓▓▓ ▓▓</p>
+                <span class="sr-only" data-i18n="lore.timeline.locked">Запись заархивирована</span>
+              </li>
+              <li class="timeline__item">
+                <p class="timeline__code" aria-hidden="true">ENTRY 02 // DATA CORRUPTED</p>
+                <p class="timeline__mask" aria-hidden="true">▒▒▒▒ ▓▓▓▓▓▓▓▓▓</p>
+                <span class="sr-only" data-i18n="lore.timeline.locked">Запись заархивирована</span>
+              </li>
+              <li class="timeline__item">
+                <p class="timeline__code" aria-hidden="true">ENTRY 03 // LOCKED</p>
+                <p class="timeline__mask" aria-hidden="true">██████ ▒▒▒▒▒ ▓▓▓</p>
+                <span class="sr-only" data-i18n="lore.timeline.locked">Запись заархивирована</span>
+              </li>
+              <li class="timeline__item">
+                <p class="timeline__code" aria-hidden="true">ENTRY 04 // DATA CORRUPTED</p>
+                <p class="timeline__mask" aria-hidden="true">▓▓▓ ████████</p>
+                <span class="sr-only" data-i18n="lore.timeline.locked">Запись заархивирована</span>
+              </li>
+              <li class="timeline__item">
+                <p class="timeline__code" aria-hidden="true">ENTRY 05 // LOCKED</p>
+                <p class="timeline__mask" aria-hidden="true">▒▒▒▒▒▒ ▓▓▓▓ █</p>
+                <span class="sr-only" data-i18n="lore.timeline.locked">Запись заархивирована</span>
+              </li>
+            </ol>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ======================= ПОДВАЛ ======================= -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer__grid">
+
+        <div class="footer__brand">
+          <a class="logo" href="index.html" aria-label="GILDSPINE">GILDSPINE</a>
+          <p class="footer__slogan" data-i18n="footer.slogan">Stay Gold</p>
+          <p class="footer__text" data-i18n="footer.description">Тёмное фэнтези в музыке и литературе. Золото не тускнеет — даже во тьме.</p>
+        </div>
+
+        <nav aria-label="Навигация по сайту" data-i18n-attr="aria-label:footer.navTitle">
+          <h2 class="footer__title" data-i18n="footer.navTitle">Навигация</h2>
+          <ul class="footer__links">
+            <li><a href="index.html" data-i18n="nav.home">Главная</a></li>
+            <li><a href="music.html" data-i18n="nav.music">Музыка</a></li>
+            <li><a href="book.html" data-i18n="nav.book">Книга</a></li>
+            <li><a href="lore.html" data-i18n="nav.universe">Вселенная</a></li>
+            <li><a href="media.html" data-i18n="nav.media">Медиа</a></li>
+            <li><a href="donate.html" data-i18n="nav.support">Поддержать</a></li>
+            <li><a href="about.html" data-i18n="nav.about">О проекте</a></li>
+            <li><a href="contact.html" data-i18n="nav.contact">Связаться</a></li>
+          </ul>
+        </nav>
+
+        <nav aria-label="Документы" data-i18n-attr="aria-label:footer.docsTitle">
+          <h2 class="footer__title" data-i18n="footer.docsTitle">Документы</h2>
+          <ul class="footer__links">
+            <li><a href="legal.html" data-i18n="footer.legal">Правовая информация</a></li>
+            <li><a href="legal.html#privacy" data-i18n="footer.privacy">Конфиденциальность</a></li>
+            <li><a href="legal.html#terms" data-i18n="footer.terms">Условия использования</a></li>
+          </ul>
+        </nav>
+
+      </div>
+
+      <div class="footer__bottom">
+        <p>© <span data-year>2026</span> Gildspine. <span data-i18n="footer.rights">Все права защищены.</span></p>
+        <a class="footer__top-link" href="#top" data-i18n="footer.backToTop">Наверх</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ======================= СКРИПТ СТРАНИЦЫ ======================= -->
+  <script>
+    /* Вселенная: Четыре Бездны (интерактивные карточки) + галерея персонажей с фильтром
+       по Бездне. Выбор Бездны в карточке или в чипах фильтрует галерею; ссылка
+       lore.html?abyss=crimson открывается с уже выбранной Бездной. */
+    window.addEventListener('DOMContentLoaded', function () {
+      'use strict';
+
+      var I18n = window.GildspineI18n;
+      var D = window.GildspineData;
+      if (!I18n || !D) return;
+
+      var state = { abyss: null };
+      var abysses = D.abysses.slice().sort(function (a, b) { return a.order - b.order; });
+
+      var cardsEl = document.getElementById('abyss-cards');
+      var chipsEl = document.getElementById('char-filters');
+      var gridEl = document.getElementById('char-grid');
+      var countEl = document.getElementById('chars-count');
+
+      var SILHOUETTE =
+        '<svg viewBox="0 0 120 160" aria-hidden="true">' +
+        '<circle cx="60" cy="80" r="52" fill="none" stroke="#c9a227" stroke-opacity=".28" stroke-dasharray="2 5"/>' +
+        '<circle cx="60" cy="56" r="22" fill="currentColor" fill-opacity=".85" stroke="#c9a227" stroke-opacity=".45"/>' +
+        '<path d="M16 160 C16 118 38 98 60 98 C82 98 104 118 104 160 Z" fill="currentColor" fill-opacity=".85" stroke="#c9a227" stroke-opacity=".45"/>' +
+        '</svg>';
+
+      /* ---------- Хелперы ---------- */
+      function t(key) {
+        var v = I18n.t(key);
+        return v === undefined ? key : v;
+      }
+
+      function el(tag, className, text) {
+        var node = document.createElement(tag);
+        if (className) node.className = className;
+        if (text !== undefined && text !== null) node.textContent = text;
+        return node;
+      }
+
+      function setAbyssVars(node, abyss) {
+        node.style.setProperty('--abyss', abyss.color);
+        node.style.setProperty('--abyss-glow', abyss.glow);
+      }
+
+      function membersOf(abyssId) {
+        return D.getCharactersByAbyss(abyssId).map(function (c) { return D.tr(c.name); }).join(', ');
+      }
+
+      /* ---------- Четыре Бездны ---------- */
+      function buildAbyssCard(a) {
+        var name = D.tr(a.name);
+        var card = el('article', 'abyss-card');
+        card.setAttribute('data-abyss', a.id);
+        setAbyssVars(card, a);
+
+        var color = el('div', 'abyss-card__color');
+        color.appendChild(el('span', 'abyss-card__dot'));
+        color.appendChild(el('span', '', a.color.toUpperCase()));
+        card.appendChild(color);
+
+        var title = el('h3', 'abyss-card__title');
+        var btn = el('button', 'abyss-card__toggle', name);
+        btn.type = 'button';
+        btn.setAttribute('aria-pressed', 'false');
+        btn.setAttribute('aria-label', t('lore.abyss.select').replace('{name}', name));
+        btn.addEventListener('click', function () { selectAbyss(state.abyss === a.id ? null : a.id); });
+        title.appendChild(btn);
+        card.appendChild(title);
+
+        card.appendChild(el('p', 'abyss-card__epithet', D.tr(a.epithet)));
+        card.appendChild(el('p', 'abyss-card__text', D.tr(a.description)));
+        card.appendChild(el('p', 'meta abyss-card__members', t('lore.abyss.members') + ': ' + membersOf(a.id)));
+        return card;
+      }
+
+      function renderAbysses() {
+        cardsEl.textContent = '';
+        abysses.forEach(function (a) { cardsEl.appendChild(buildAbyssCard(a)); });
+      }
+
+      /* ---------- Фильтр-чипы ---------- */
+      function buildChip(label, abyss) {
+        var chip = el('button', 'filter-chip');
+        chip.type = 'button';
+        chip.setAttribute('data-abyss', abyss ? abyss.id : '');
+        chip.setAttribute('aria-pressed', 'false');
+        if (abyss) {
+          chip.style.setProperty('--chip', abyss.color);
+          chip.style.setProperty('--chip-glow', abyss.glow);
+        }
+        var dot = el('span', 'filter-chip__dot');
+        dot.setAttribute('aria-hidden', 'true');
+        if (!abyss) {
+          dot.style.setProperty('--chip', '#c9a227');
+        }
+        chip.appendChild(dot);
+        chip.appendChild(document.createTextNode(label));
+        chip.addEventListener('click', function () { selectAbyss(abyss ? (state.abyss === abyss.id ? null : abyss.id) : null); });
+        return chip;
+      }
+
+      function renderChips() {
+        chipsEl.textContent = '';
+        chipsEl.appendChild(buildChip(t('lore.chars.all'), null));
+        abysses.forEach(function (a) { chipsEl.appendChild(buildChip(D.tr(a.name), a)); });
+      }
+
+      /* ---------- Персонажи ---------- */
+      function portrait(ch, abyss, name) {
+        var wrap = el('div', 'portrait');
+
+        function placeholder() {
+          wrap.textContent = '';
+          wrap.classList.add('portrait--placeholder');
+          wrap.setAttribute('role', 'img');
+          wrap.setAttribute('aria-label', name);
+          var sil = el('div', 'portrait__sil');
+          sil.innerHTML = SILHOUETTE; // константная разметка
+          wrap.appendChild(sil);
+          wrap.appendChild(el('span', 'portrait__initial', name.charAt(0)));
+        }
+
+        if (!ch.image) {
+          placeholder();
+          return wrap;
+        }
+        var img = new Image();
+        img.alt = name;
+        img.decoding = 'async';
+        img.loading = 'lazy';
+        img.addEventListener('error', placeholder);
+        wrap.appendChild(img);
+        img.src = ch.image;
+        return wrap;
+      }
+
+      function buildCharacter(ch) {
+        var abyss = D.getAbyssById(ch.abyss);
+        var name = D.tr(ch.name);
+        var card = el('article', 'card card--interactive char-card');
+        if (abyss) setAbyssVars(card, abyss);
+
+        var media = el('div', 'card__media');
+        media.appendChild(portrait(ch, abyss, name));
+        card.appendChild(media);
+
+        card.appendChild(el('p', 'meta char-card__role', D.tr(ch.role)));
+        card.appendChild(el('h3', 'char-card__name', name));
+
+        if (abyss) {
+          var tagWrap = el('p', 'char-card__abyss');
+          tagWrap.appendChild(el('span', 'tag tag--abyss', D.tr(abyss.name)));
+          card.appendChild(tagWrap);
+        }
+
+        card.appendChild(el('p', 'card__text', D.tr(ch.bio)));
+        return card;
+      }
+
+      function renderCharacters() {
+        var list = D.characters.filter(function (c) { return !state.abyss || c.abyss === state.abyss; });
+        gridEl.textContent = '';
+        list.forEach(function (c) { gridEl.appendChild(buildCharacter(c)); });
+        countEl.textContent = t('lore.chars.count')
+          .replace('{n}', String(list.length))
+          .replace('{total}', String(D.characters.length));
+      }
+
+      /* ---------- Выбор Бездны ---------- */
+      function updateSelection() {
+        Array.prototype.forEach.call(cardsEl.children, function (card) {
+          var active = card.getAttribute('data-abyss') === state.abyss;
+          card.classList.toggle('is-active', active);
+          card.querySelector('.abyss-card__toggle').setAttribute('aria-pressed', active ? 'true' : 'false');
+        });
+        Array.prototype.forEach.call(chipsEl.children, function (chip) {
+          var id = chip.getAttribute('data-abyss');
+          var active = id ? id === state.abyss : state.abyss === null;
+          chip.setAttribute('aria-pressed', active ? 'true' : 'false');
+        });
+      }
+
+      function updateUrl() {
+        try {
+          history.replaceState(null, '', location.pathname + (state.abyss ? '?abyss=' + encodeURIComponent(state.abyss) : ''));
+        } catch (e) { /* file:// — адрес не обновляем */ }
+      }
+
+      function selectAbyss(id) {
+        state.abyss = id;
+        updateSelection();
+        renderCharacters();
+        updateUrl();
+      }
+
+      function renderAll() {
+        renderAbysses();
+        renderChips();
+        renderCharacters();
+        updateSelection();
+      }
+
+      /* ---------- Старт ---------- */
+      var qAbyss = D.getAbyssById(new URLSearchParams(location.search).get('abyss'));
+      if (qAbyss) state.abyss = qAbyss.id;
+
+      renderAll();
+      document.addEventListener('gildspine:languagechange', renderAll);
+    });
+  </script>
+</body>
+</html>
