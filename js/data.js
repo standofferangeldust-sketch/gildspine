@@ -191,6 +191,12 @@
         ozon:        'https://www.ozon.ru/REPLACE_BOOK_1_OZON',
         wildberries: 'https://www.wildberries.ru/REPLACE_BOOK_1_WILDBERRIES'
       },
+      /* Полная версия онлайн. Укажите платформу и ссылку: ЛитРес, Автор.Тудей (Author.Today),
+         Wattpad или Google Docs. Если поле убрать — кнопка «Читать полностью» откроет ЛитРес. */
+      fullRead: {
+        platform: 'Author.Today',
+        url: 'https://author.today/work/REPLACE_BOOK_1'
+      },
       cipher: null,
       hint: null
     },
