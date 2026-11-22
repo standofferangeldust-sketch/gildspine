@@ -554,7 +554,7 @@
         name: 'Toncoin',
         network: 'TON',
         address: 'UQCzsEkwPLdLtNI7wErtjCHlxM1hdvnM3iSmKjACh2kixjPu',
-        memo: 'REPLACE_WITH_TON_MEMO_OR_NULL',
+        memo: null,
         qr: 'assets/images/qr/ton.png'
       },
       sol: {
