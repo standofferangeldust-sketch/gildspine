@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0a0a0f">
+
+  <title data-i18n="legal.meta.title">Правовая информация — GILDSPINE</title>
+  <meta name="description"
+        content="Правовая информация GILDSPINE: пользовательское соглашение, политика конфиденциальности и отказ от ответственности."
+        data-i18n-attr="content:legal.meta.description">
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="GILDSPINE">
+  <meta property="og:title" content="GILDSPINE — Legal information">
+  <meta property="og:description" content="Terms of Use, Privacy Policy and Disclaimer.">
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230a0a0f'/%3E%3Cpath d='M16 3l9 13-9 13-9-13z' fill='none' stroke='%23c9a227' stroke-width='2'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="css/style.css">
+
+  <!-- Стили юридической страницы (при желании перенесите в css/style.css) -->
+  <style>
+    /* ---------- Шапка: логотип + слоган ---------- */
+    .logo {
+      display: inline-flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      line-height: 1;
+    }
+
+    .logo__slogan {
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      font-weight: 400;
+      letter-spacing: 0.42em;
+      text-transform: none;
+      color: var(--text-muted);
+      text-shadow: none;
+    }
+
+    /* ---------- Вкладки ---------- */
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      margin-bottom: 2rem;
+    }
+
+    .tab {
+      display: inline-flex;
+      align-items: center;
+      min-height: 46px;
+      padding: 0.6rem 1.15rem;
+      font-family: var(--font-display);
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      text-align: left;
+      color: var(--text-muted);
+      background: transparent;
+      border: 1px solid var(--border-gold);
+      border-radius: var(--radius);
+      transition:
+        color var(--t-fast) var(--ease),
+        border-color var(--t-fast) var(--ease),
+        background-color var(--t-fast) var(--ease),
+        box-shadow var(--t-med) var(--ease);
+    }
+
+    .tab:hover {
+      color: var(--gold-bright);
+      border-color: var(--border-gold-strong);
+    }
+
+    .tab[aria-selected='true'] {
+      color: var(--gold);
+      background: rgba(201, 162, 39, 0.12);
+      border-color: var(--gold);
+      box-shadow: var(--glow-gold-soft);
+    }
+
+    .tab-panel[hidden] {
+      display: none;
+    }
+
+    /* ---------- Документ ---------- */
+    .doc {
+      max-width: 74ch;
+    }
+
+    .doc__title {
+      margin-bottom: 0.6rem;
+      font-size: var(--fs-xl);
+      color: var(--gold);
+    }
+
+    .doc__updated {
+      margin-bottom: 1.5rem;
+    }
+
+    .doc__intro {
+      margin-bottom: 2rem;
+      color: var(--text);
+      font-size: var(--fs-md);
+      font-weight: 300;
+      line-height: 1.75;
+    }
+
+    .doc__section {
+      margin-bottom: 1.75rem;
+      padding-left: 1.1rem;
+      border-left: 1px solid var(--border-gold);
+    }
+
+    .doc__heading {
+      margin-bottom: 0.6rem;
+      font-size: var(--fs-base);
+      letter-spacing: 0.1em;
+      color: var(--gold-bright);
+    }
+
+    .doc__section p {
+      color: var(--text-muted);
+      line-height: 1.75;
+      max-width: none;
+    }
+
+    .doc__section a {
+      border-bottom: 1px solid var(--border-gold-strong);
+    }
+
+    .doc__note {
+      margin-top: 2.5rem;
+    }
+  </style>
+
+  <!-- i18n подключается БЕЗ defer: словарь страницы регистрируется до перевода DOM -->
+  <script src="js/i18n.js"></script>
+  <script>
+    GildspineI18n.extend({
+      ru: {
+        'legal.meta.title': 'Правовая информация — GILDSPINE',
+        'legal.meta.description': 'Правовая информация GILDSPINE: пользовательское соглашение, политика конфиденциальности и отказ от ответственности.',
+        'legal.page.title': 'Правовая информация',
+        'legal.page.lead': 'Пользовательское соглашение, политика конфиденциальности и отказ от ответственности — на русском и английском языках (язык переключается в шапке сайта).',
+        'legal.tabs.label': 'Юридические документы',
+        'legal.tab.terms': 'Пользовательское соглашение',
+        'legal.tab.privacy': 'Политика конфиденциальности',
+        'legal.tab.disclaimer': 'Отказ от ответственности',
+        'legal.updated': 'Обновлено: 22 ноября 2026',
+
+        'footer.docsTitle': 'Документы',
+        'footer.legal': 'Правовая информация',
+        'footer.privacy': 'Конфиденциальность',
+        'footer.terms': 'Условия использования'
+      },
+      en: {
+        'legal.meta.title': 'Legal information — GILDSPINE',
+        'legal.meta.description': 'GILDSPINE legal information: Terms of Use, Privacy Policy and Disclaimer.',
+        'legal.page.title': 'Legal information',
+        'legal.page.lead': 'Terms of Use, Privacy Policy and Disclaimer — in Russian and English (switch the language in the site header).',
+        'legal.tabs.label': 'Legal documents',
+        'legal.tab.terms': 'Terms of Use',
+        'legal.tab.privacy': 'Privacy Policy',
+        'legal.tab.disclaimer': 'Disclaimer',
+        'legal.updated': 'Last updated: November 22, 2026',
+
+        'footer.docsTitle': 'Documents',
+        'footer.legal': 'Legal information',
+        'footer.privacy': 'Privacy',
+        'footer.terms': 'Terms of use'
+      }
+    });
+  </script>
+  <script src="js/data.js" defer></script>
+</head>
+
+<body id="top">
+
+  <a class="skip-link" href="#main" data-i18n="a11y.skip">Перейти к содержимому</a>
+
+  <!-- ======================= ШАПКА ======================= -->
+  <header class="site-header">
+    <div class="container header__inner">
+      <input type="checkbox" id="nav-toggle" class="nav-toggle"
+             aria-label="Открыть или закрыть меню" data-i18n-attr="aria-label:nav.toggle">
+
+      <a class="logo" href="index.html" aria-label="GILDSPINE — Stay Gold">
+        <span class="logo__name">GILDSPINE</span>
+        <span class="logo__slogan">Stay Gold</span>
+      </a>
+
+      <div class="header__controls">
+        <div class="lang-switch" role="group" aria-label="Выбор языка" data-i18n-attr="aria-label:lang.label">
+          <button type="button" class="lang-btn" data-set-lang="ru">RU</button>
+          <button type="button" class="lang-btn" data-set-lang="en">EN</button>
+        </div>
+        <label for="nav-toggle" class="burger" aria-hidden="true">
+          <span class="burger__bar"></span>
+          <span class="burger__bar"></span>
+          <span class="burger__bar"></span>
+        </label>
+      </div>
+
+      <nav class="main-nav" aria-label="Основная навигация" data-i18n-attr="aria-label:nav.main">
+        <ul class="nav-list">
+          <li><a class="nav-link" href="index.html" data-i18n="nav.home">Главная</a></li>
+          <li><a class="nav-link" href="music.html" data-i18n="nav.music">Музыка</a></li>
+          <li><a class="nav-link" href="book.html" data-i18n="nav.book">Книга</a></li>
+          <li><a class="nav-link" href="lore.html" data-i18n="nav.universe">Вселенная</a></li>
+          <li><a class="nav-link" href="media.html" data-i18n="nav.media">Медиа</a></li>
+          <li><a class="nav-link" href="donate.html" data-i18n="nav.support">Поддержать</a></li>
+          <li><a class="nav-link" href="about.html" data-i18n="nav.about">О проекте</a></li>
+          <li><a class="nav-link" href="contact.html" data-i18n="nav.contact">Связаться</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+
+    <!-- ======================= ЗАГОЛОВОК ======================= -->
+    <section class="page-hero">
+      <div class="container">
+        <h1 class="page-hero__title" data-i18n="legal.page.title">Правовая информация</h1>
+        <p class="lead" data-i18n="legal.page.lead">Пользовательское соглашение, политика конфиденциальности и отказ от ответственности — на русском и английском языках (язык переключается в шапке сайта).</p>
+      </div>
+    </section>
+
+    <!-- ======================= ДОКУМЕНТЫ ======================= -->
+    <section class="section">
+      <div class="container container--narrow">
+
+        <div class="tabs" role="tablist" aria-label="Юридические документы" data-i18n-attr="aria-label:legal.tabs.label">
+          <button type="button" class="tab" role="tab" id="tab-terms" aria-controls="panel-terms"
+                  aria-selected="true" tabindex="0" data-i18n="legal.tab.terms">Пользовательское соглашение</button>
+          <button type="button" class="tab" role="tab" id="tab-privacy" aria-controls="panel-privacy"
+                  aria-selected="false" tabindex="-1" data-i18n="legal.tab.privacy">Политика конфиденциальности</button>
+          <button type="button" class="tab" role="tab" id="tab-disclaimer" aria-controls="panel-disclaimer"
+                  aria-selected="false" tabindex="-1" data-i18n="legal.tab.disclaimer">Отказ от ответственности</button>
+        </div>
+
+        <div class="tab-panel" role="tabpanel" id="panel-terms" aria-labelledby="tab-terms"></div>
+        <div class="tab-panel" role="tabpanel" id="panel-privacy" aria-labelledby="tab-privacy" hidden></div>
+        <div class="tab-panel" role="tabpanel" id="panel-disclaimer" aria-labelledby="tab-disclaimer" hidden></div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ======================= ПОДВАЛ ======================= -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer__grid">
+
+        <div class="footer__brand">
+          <a class="logo" href="index.html" aria-label="GILDSPINE">GILDSPINE</a>
+          <p class="footer__slogan" data-i18n="footer.slogan">Stay Gold</p>
+          <p class="footer__text" data-i18n="footer.description">Тёмное фэнтези в музыке и литературе. Золото не тускнеет — даже во тьме.</p>
+        </div>
+
+        <nav aria-label="Навигация по сайту" data-i18n-attr="aria-label:footer.navTitle">
+          <h2 class="footer__title" data-i18n="footer.navTitle">Навигация</h2>
+          <ul class="footer__links">
+            <li><a href="index.html" data-i18n="nav.home">Главная</a></li>
+            <li><a href="music.html" data-i18n="nav.music">Музыка</a></li>
+            <li><a href="book.html" data-i18n="nav.book">Книга</a></li>
+            <li><a href="lore.html" data-i18n="nav.universe">Вселенная</a></li>
+            <li><a href="media.html" data-i18n="nav.media">Медиа</a></li>
+            <li><a href="donate.html" data-i18n="nav.support">Поддержать</a></li>
+            <li><a href="about.html" data-i18n="nav.about">О проекте</a></li>
+            <li><a href="contact.html" data-i18n="nav.contact">Связаться</a></li>
+          </ul>
+        </nav>
+
+        <nav aria-label="Документы" data-i18n-attr="aria-label:footer.docsTitle">
+          <h2 class="footer__title" data-i18n="footer.docsTitle">Документы</h2>
+          <ul class="footer__links">
+            <li><a href="legal.html" data-i18n="footer.legal">Правовая информация</a></li>
+            <li><a href="legal.html#privacy" data-i18n="footer.privacy">Конфиденциальность</a></li>
+            <li><a href="legal.html#terms" data-i18n="footer.terms">Условия использования</a></li>
+          </ul>
+        </nav>
+
+      </div>
+
+      <div class="footer__bottom">
+        <p>© <span data-year>2026</span> Gildspine. <span data-i18n="footer.rights">Все права защищены.</span></p>
+        <a class="footer__top-link" href="#top" data-i18n="footer.backToTop">Наверх</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ======================= СКРИПТ СТРАНИЦЫ ======================= -->
+  <script>
+    /* Юридические документы: три вкладки (#terms / #privacy / #disclaimer), тексты на RU и EN.
+       Язык документа следует за переключателем RU / EN в шапке. Токен {email} заменяется
+       на общий адрес из js/data.js (links.emails.general). */
+    window.addEventListener('DOMContentLoaded', function () {
+      'use strict';
+
+      var I18n = window.GildspineI18n;
+      var D = window.GildspineData;
+      if (!I18n) return;
+
+      /* ======================================================================
+         ТЕКСТЫ ДОКУМЕНТОВ
+         ====================================================================== */
+      var DOCS = {
+
+        /* ---------- ПОЛЬЗОВАТЕЛЬСКОЕ СОГЛАШЕНИЕ / TERMS OF USE ---------- */
+        terms: {
+          ru: {
+            title: 'Пользовательское соглашение',
+            intro: 'Настоящее соглашение регулирует использование сайта GILDSPINE (далее — «Сайт»). Используя Сайт, вы подтверждаете, что прочитали эти условия и принимаете их.',
+            sections: [
+              { h: '1. Общие положения', p: ['Сайт — некоммерческий творческий проект автора Vlad (Gildspine) в жанре тёмного фэнтези: музыка, литература и материалы вымышленной вселенной. Сайт размещён на GitHub Pages и предоставляется «как есть».'] },
+              { h: '2. Авторские права', p: ['Все материалы Сайта — музыка, тексты, главы книги, обложки, арты, названия, персонажи и мир вселенной — охраняются авторским правом и принадлежат автору, если не указано иное.',
+                'Разрешено: слушать и читать материалы, скачивать обои для личного использования, делиться ссылками на Сайт. Запрещено без письменного согласия автора: копировать и републиковать тексты и треки, использовать материалы в коммерческих целях, перепродавать их, выдавать за свои, а также автоматически собирать содержимое Сайта.'] },
+              { h: '3. Поведение пользователей', p: ['Не используйте Сайт для нарушения закона, распространения вредоносного кода, попыток нарушить его работу, а также для рассылки спама через формы обратной связи.'] },
+              { h: '4. Сторонние сервисы и ссылки', p: ['Сайт содержит ссылки и встроенные плееры сторонних платформ (YouTube, VK, TikTok, BandLab, ЛитРес, Ozon, Wildberries, CloudTips и других). Автор не отвечает за их содержание, доступность и правила — их использование регулируется собственными условиями этих сервисов.'] },
+              { h: '5. Пожертвования', p: ['Поддержка проекта добровольна и не является оплатой товаров или услуг. Подробнее — в документе «Отказ от ответственности».'] },
+              { h: '6. Ограничение ответственности', p: ['Сайт предоставляется без гарантий бесперебойной работы и отсутствия ошибок. В пределах, допускаемых законом, автор не несёт ответственности за убытки, возникшие в связи с использованием Сайта.'] },
+              { h: '7. Изменения соглашения', p: ['Автор может изменять соглашение. Актуальная версия публикуется на этой странице с датой обновления. Продолжение использования Сайта означает согласие с изменениями.'] },
+              { h: '8. Контакты', p: ['По всем вопросам пишите на {email}.'] }
+            ]
+          },
+          en: {
+            title: 'Terms of Use',
+            intro: 'These terms govern your use of the GILDSPINE website (the “Site”). By using the Site you confirm that you have read these terms and accept them.',
+            sections: [
+              { h: '1. General', p: ['The Site is a non-commercial creative project by the author Vlad (Gildspine) in the dark fantasy genre: music, literature and materials of a fictional universe. The Site is hosted on GitHub Pages and provided “as is”.'] },
+              { h: '2. Copyright', p: ['All Site materials — music, texts, book chapters, covers, artwork, titles, characters and the world of the universe — are protected by copyright and belong to the author unless stated otherwise.',
+                'Allowed: listening to and reading the materials, downloading wallpapers for personal use, sharing links to the Site. Not allowed without the author’s written consent: copying or republishing texts and tracks, commercial use, resale, passing the materials off as your own, and automated scraping of the Site.'] },
+              { h: '3. User conduct', p: ['Do not use the Site to break the law, distribute malicious code, disrupt its operation, or send spam through the contact forms.'] },
+              { h: '4. Third-party services and links', p: ['The Site contains links and embedded players of third-party platforms (YouTube, VK, TikTok, BandLab, LitRes, Ozon, Wildberries, CloudTips and others). The author is not responsible for their content, availability or rules — their use is governed by those services’ own terms.'] },
+              { h: '5. Donations', p: ['Supporting the project is voluntary and is not payment for goods or services. See the “Disclaimer” document for details.'] },
+              { h: '6. Limitation of liability', p: ['The Site is provided without any warranty of uninterrupted or error-free operation. To the extent permitted by law, the author is not liable for any losses arising from the use of the Site.'] },
+              { h: '7. Changes to the terms', p: ['The author may change these terms. The current version is published on this page with its update date. Continued use of the Site means you accept the changes.'] },
+              { h: '8. Contact', p: ['For any questions, write to {email}.'] }
+            ]
+          }
+        },
+
+        /* ---------- ПОЛИТИКА КОНФИДЕНЦИАЛЬНОСТИ / PRIVACY POLICY ---------- */
+        privacy: {
+          ru: {
+            title: 'Политика конфиденциальности',
+            intro: 'Мы стараемся собирать как можно меньше данных. Эта политика объясняет, какие данные обрабатываются при использовании сайта GILDSPINE.',
+            sections: [
+              { h: '1. Чего мы не делаем', p: ['На Сайте нет регистрации и личных кабинетов. Мы не используем собственные cookie, рекламные трекеры и системы аналитики. Если аналитика появится, эта политика будет обновлена.'] },
+              { h: '2. Данные в вашем браузере', p: ['Для удобства Сайт сохраняет в localStorage вашего браузера выбранный язык (ключ gildspine-lang) и размер шрифта в читалке (ключ gildspine-reader-size). Эти данные не покидают ваше устройство, и вы можете удалить их в настройках браузера.'] },
+              { h: '3. Форма обратной связи и почта', p: ['Если вы отправляете сообщение через форму, имя, email, тема и текст передаются в Google Forms (Google LLC) и используются только для ответа вам. Письма на {email} используются так же. Присылайте только то, чем готовы поделиться. По вашему запросу мы удалим вашу переписку.'] },
+              { h: '4. Сторонние сервисы', p: ['Шрифты загружаются с Google Fonts, а библиотека Three.js на главной странице — с CDN jsDelivr; при этом ваш IP-адрес передаётся этим сервисам. Видео YouTube и VK подгружаются только после вашего клика по постеру. При переходе по внешним ссылкам, оплате через CloudTips или криптокошельки и покупках на ЛитРес, Ozon и Wildberries данные обрабатываются этими сервисами по их собственным политикам.',
+                'Сайт размещён на GitHub Pages (GitHub, Inc.), который может хранить технические журналы посещений, включая IP-адрес и время запроса.'] },
+              { h: '5. Ваши права', p: ['Вы можете запросить доступ к данным, их исправление или удаление, написав на {email}. Мы рассматриваем такие запросы в соответствии с применимым законодательством, включая GDPR и Федеральный закон № 152-ФЗ «О персональных данных».'] },
+              { h: '6. Возраст', p: ['Сайт содержит тёмные темы, рекомендуемый возраст — 16+. Мы сознательно не собираем данные детей младше 13 лет.'] },
+              { h: '7. Изменения', p: ['Мы можем обновлять эту политику. Актуальная версия всегда доступна на этой странице с датой обновления.'] }
+            ]
+          },
+          en: {
+            title: 'Privacy Policy',
+            intro: 'We try to collect as little data as possible. This policy explains what data is processed when you use the GILDSPINE website.',
+            sections: [
+              { h: '1. What we don’t do', p: ['The Site has no registration or user accounts. We do not use our own cookies, advertising trackers or analytics. If analytics appear, this policy will be updated.'] },
+              { h: '2. Data in your browser', p: ['For convenience the Site stores your chosen language (key gildspine-lang) and the reader font size (key gildspine-reader-size) in your browser’s localStorage. This data never leaves your device, and you can delete it in your browser settings.'] },
+              { h: '3. Contact form and email', p: ['If you send a message through the form, your name, email, subject and text are passed to Google Forms (Google LLC) and used only to reply to you. Emails sent to {email} are used the same way. Only send what you are comfortable sharing. We will delete your correspondence on request.'] },
+              { h: '4. Third-party services', p: ['Fonts are loaded from Google Fonts, and the Three.js library on the home page from the jsDelivr CDN; your IP address is transmitted to these services. YouTube and VK videos load only after you click a poster. When you follow external links, pay via CloudTips or crypto wallets, or buy on LitRes, Ozon and Wildberries, your data is processed by those services under their own policies.',
+                'The Site is hosted on GitHub Pages (GitHub, Inc.), which may keep technical visit logs including your IP address and request time.'] },
+              { h: '5. Your rights', p: ['You may request access to, correction of or deletion of your data by writing to {email}. We handle such requests in accordance with applicable law, including the GDPR and Russian Federal Law No. 152-FZ “On Personal Data”.'] },
+              { h: '6. Age', p: ['The Site contains dark themes; the recommended age is 16+. We do not knowingly collect data from children under 13.'] },
+              { h: '7. Changes', p: ['We may update this policy. The current version is always available on this page with its update date.'] }
+            ]
+          }
+        },
+
+        /* ---------- ОТКАЗ ОТ ОТВЕТСТВЕННОСТИ / DISCLAIMER ---------- */
+        disclaimer: {
+          ru: {
+            title: 'Отказ от ответственности',
+            intro: 'Пожалуйста, прочитайте этот документ внимательно: он касается вымышленного характера вселенной GILDSPINE и добровольности пожертвований.',
+            sections: [
+              { h: '1. Вымышленность персонажей и событий', p: ['Все персонажи, имена, события, организации и места вселенной GILDSPINE — Кастер, Они, Лира, Вектор, Эхо / Пантера, Синт, Хром, Тень, Четыре Бездны и другие — вымышлены. Любые совпадения с реальными людьми, живыми или умершими, и реальными событиями случайны.'] },
+              { h: '2. Художественный вымысел', p: ['Музыка и книги проекта содержат тёмные темы: насилие, мистику, мрачные образы. Это художественный вымысел: он не призывает к насилию или опасным действиям и не пропагандирует их. Рекомендуемый возраст — 16+.'] },
+              { h: '3. Добровольность пожертвований', p: ['Все пожертвования (CloudTips, криптовалюта) — добровольный безвозмездный дар на развитие проекта. Они не являются оплатой товаров или услуг, не создают обязательств по срокам выхода релизов и глав и не дают права на какие-либо материалы, кроме прямо оговорённых. Возврат не предусмотрен, если иное не требуется законом.'] },
+              { h: '4. Криптовалюта', p: ['Криптотранзакции необратимы. Перед отправкой проверьте адрес и сеть: автор не отвечает за потери из-за ошибочного адреса или сети, комиссии и колебания курса. Адреса кошельков публикуются только на этом сайте, автор никогда не просит перевести средства в личных сообщениях.'] },
+              { h: '5. Анонсы и сроки', p: ['Даты релизов, анонсы книг и материалов могут меняться. Информация на Сайте не является гарантией выхода конкретного произведения в конкретный срок.'] },
+              { h: '6. Сторонние сервисы', p: ['Автор не отвечает за работу, доступность и содержимое сторонних платформ, на которые ведут ссылки Сайта, а также за их блокировки и ограничения в вашем регионе.'] }
+            ]
+          },
+          en: {
+            title: 'Disclaimer',
+            intro: 'Please read this document carefully: it concerns the fictional nature of the GILDSPINE universe and the voluntary nature of donations.',
+            sections: [
+              { h: '1. Fictional characters and events', p: ['All characters, names, events, organizations and places of the GILDSPINE universe — Caster, Oni, Lyra, Vector, Echo / Panther, Synth, Chrome, Shadow, the Four Abysses and others — are fictional. Any resemblance to real people, living or dead, or to real events is coincidental.'] },
+              { h: '2. Artistic fiction', p: ['The project’s music and books contain dark themes: violence, the occult, grim imagery. This is artistic fiction: it neither calls for nor promotes violence or dangerous acts. The recommended age is 16+.'] },
+              { h: '3. Donations are voluntary', p: ['All donations (CloudTips, cryptocurrency) are a voluntary, gratuitous gift toward the project’s development. They are not payment for goods or services, create no obligation regarding release or chapter dates, and entitle you to no materials beyond those expressly stated. Refunds are not provided unless required by law.'] },
+              { h: '4. Cryptocurrency', p: ['Crypto transactions are irreversible. Check the address and network before sending: the author is not responsible for losses caused by a wrong address or network, fees or exchange-rate swings. Wallet addresses are published only on this site, and the author will never ask you to send funds in private messages.'] },
+              { h: '5. Announcements and timing', p: ['Release dates and announcements of books and materials may change. Information on the Site is no guarantee that a particular work will appear by a particular date.'] },
+              { h: '6. Third-party services', p: ['The author is not responsible for the operation, availability or content of third-party platforms linked from the Site, nor for their blocking or restrictions in your region.'] }
+            ]
+          }
+        }
+      };
+
+      var panels = { terms: 'panel-terms', privacy: 'panel-privacy', disclaimer: 'panel-disclaimer' };
+      var IDS = ['terms', 'privacy', 'disclaimer'];
+
+      function t(key) {
+        var v = I18n.t(key);
+        return v === undefined ? key : v;
+      }
+
+      function el(tag, className, text) {
+        var node = document.createElement(tag);
+        if (className) node.className = className;
+        if (text !== undefined && text !== null) node.textContent = text;
+        return node;
+      }
+
+      function lang() {
+        return I18n.getLang() === 'en' ? 'en' : 'ru';
+      }
+
+      function email() {
+        return (D && D.links && D.links.emails && D.links.emails.general) || '';
+      }
+
+      /* Абзац: токен {email} превращается в ссылку mailto: */
+      function paragraph(text) {
+        var p = el('p');
+        var parts = text.split('{email}');
+        parts.forEach(function (part, i) {
+          if (part) p.appendChild(document.createTextNode(part));
+          if (i < parts.length - 1) {
+            var addr = email();
+            var a = el('a', '', addr);
+            a.href = 'mailto:' + addr;
+            p.appendChild(a);
+          }
+        });
+        return p;
+      }
+
+      function renderDoc(id) {
+        var panel = document.getElementById(panels[id]);
+        var doc = DOCS[id][lang()];
+        panel.textContent = '';
+
+        var wrap = el('article', 'doc');
+        wrap.appendChild(el('h2', 'doc__title', doc.title));
+        wrap.appendChild(el('p', 'meta doc__updated', t('legal.updated')));
+        wrap.appendChild(el('p', 'doc__intro', doc.intro));
+
+        doc.sections.forEach(function (s) {
+          var section = el('section', 'doc__section');
+          section.appendChild(el('h3', 'doc__heading', s.h));
+          s.p.forEach(function (text) { section.appendChild(paragraph(text)); });
+          wrap.appendChild(section);
+        });
+        panel.appendChild(wrap);
+      }
+
+      function renderAll() {
+        IDS.forEach(renderDoc);
+      }
+
+      /* ======================================================================
+         ВКЛАДКИ (стрелки, Home/End, адрес #terms / #privacy / #disclaimer)
+         ====================================================================== */
+      var tabs = Array.prototype.slice.call(document.querySelectorAll('[role="tab"]'));
+
+      function activate(id, moveFocus, updateHash) {
+        if (IDS.indexOf(id) === -1) id = IDS[0];
+        tabs.forEach(function (tab) {
+          var active = tab.id === 'tab-' + id;
+          tab.setAttribute('aria-selected', active ? 'true' : 'false');
+          tab.tabIndex = active ? 0 : -1;
+          document.getElementById(tab.getAttribute('aria-controls')).hidden = !active;
+          if (active && moveFocus) tab.focus();
+        });
+        if (updateHash) {
+          try { history.replaceState(null, '', '#' + id); } catch (e) { /* file:// */ }
+        }
+      }
+
+      tabs.forEach(function (tab, i) {
+        tab.addEventListener('click', function () { activate(IDS[i], false, true); });
+        tab.addEventListener('keydown', function (event) {
+          var next = null;
+          if (event.key === 'ArrowRight') next = (i + 1) % tabs.length;
+          else if (event.key === 'ArrowLeft') next = (i - 1 + tabs.length) % tabs.length;
+          else if (event.key === 'Home') next = 0;
+          else if (event.key === 'End') next = tabs.length - 1;
+          if (next !== null) {
+            event.preventDefault();
+            activate(IDS[next], true, true);
+          }
+        });
+      });
+
+      window.addEventListener('hashchange', function () {
+        activate(location.hash.replace('#', ''), false, false);
+      });
+
+      /* ---------- Старт ---------- */
+      renderAll();
+      activate(location.hash.replace('#', ''), false, false);
+      document.addEventListener('gildspine:languagechange', renderAll);
+    });
+  </script>
+</body>
+</html>

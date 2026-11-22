@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0a0a0f">
+
+  <title data-i18n="donate.meta.title">Поддержать проект — GILDSPINE</title>
+  <meta name="description"
+        content="Поддержите GILDSPINE: CloudTips для России и СНГ, криптовалюта для всего мира. Каждый донат — это новые треки, главы и арты."
+        data-i18n-attr="content:donate.meta.description">
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="GILDSPINE">
+  <meta property="og:title" content="GILDSPINE — Support the project">
+  <meta property="og:description" content="Every donation becomes new tracks, chapters and art. Stay Gold.">
+  <meta property="og:image" content="assets/images/og-cover.jpg">
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230a0a0f'/%3E%3Cpath d='M16 3l9 13-9 13-9-13z' fill='none' stroke='%23c9a227' stroke-width='2'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="css/style.css">
+
+  <!-- Стили страницы поддержки (при желании перенесите в css/style.css) -->
+  <style>
+    /* ---------- Крупная кнопка ---------- */
+    .btn--lg {
+      min-height: 54px;
+      padding: 0.9rem 2rem;
+      font-size: 0.95rem;
+    }
+
+    /* ---------- Шапка: логотип + слоган ---------- */
+    .logo {
+      display: inline-flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      line-height: 1;
+    }
+
+    .logo__slogan {
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      font-weight: 400;
+      letter-spacing: 0.42em;
+      text-transform: none;
+      color: var(--text-muted);
+      text-shadow: none;
+    }
+
+    /* ---------- Баннер «поддержать этот трек» ---------- */
+    .track-banner {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 2rem;
+      padding: 0.9rem 1.25rem;
+      background: rgba(201, 162, 39, 0.07);
+      border: 1px solid var(--border-gold-strong);
+      border-radius: var(--radius);
+    }
+
+    /* ---------- Два раздельных блока ---------- */
+    .pay-block {
+      position: relative;
+      padding: clamp(1.4rem, 1rem + 2vw, 2.25rem);
+    }
+
+    .pay-block + .pay-block {
+      margin-top: clamp(1.5rem, 1rem + 2vw, 2.5rem);
+    }
+
+    .pay-block--ru {
+      background:
+        radial-gradient(90% 120% at 0% 0%, rgba(139, 0, 0, 0.22), transparent 65%),
+        var(--surface);
+    }
+
+    .pay-block--world {
+      background:
+        radial-gradient(90% 120% at 100% 0%, rgba(123, 44, 191, 0.22), transparent 65%),
+        var(--surface);
+    }
+
+    .pay-block__head {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.75rem 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .pay-block__title {
+      margin: 0;
+      font-size: var(--fs-xl);
+    }
+
+    .pay-block__text {
+      margin-bottom: 1.5rem;
+      color: var(--text-muted);
+      max-width: 62ch;
+    }
+
+    /* ---------- Кошельки ---------- */
+    .wallet {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      padding: 1.25rem;
+      background: var(--bg-deep);
+      border: 1px solid var(--border-gold);
+      border-radius: var(--radius);
+      transition: border-color var(--t-med) var(--ease), box-shadow var(--t-med) var(--ease);
+    }
+
+    .wallet:hover {
+      border-color: var(--border-gold-strong);
+      box-shadow: var(--glow-gold-soft);
+    }
+
+    .wallet__head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+    }
+
+    .wallet__name {
+      margin: 0;
+      font-size: var(--fs-md);
+      letter-spacing: 0.1em;
+    }
+
+    .wallet__body {
+      display: flex;
+      gap: 1rem;
+      align-items: flex-start;
+    }
+
+    .wallet__fields {
+      flex: 1 1 auto;
+      min-width: 0;
+      display: grid;
+      gap: 0.9rem;
+    }
+
+    .wallet__label {
+      margin-bottom: 0.35rem;
+    }
+
+    .wallet__row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .wallet__address {
+      flex: 1 1 200px;
+      min-width: 0;
+      padding: 0.55rem 0.75rem;
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      line-height: 1.5;
+      color: var(--gold-bright);
+      background: rgba(201, 162, 39, 0.05);
+      border: 1px solid var(--border-gold-soft);
+      border-radius: 2px;
+      overflow-wrap: anywhere;
+      user-select: all;
+    }
+
+    .wallet__qr {
+      flex: 0 0 96px;
+      width: 96px;
+      height: 96px;
+      padding: 4px;
+      background: #fff;
+      border-radius: 2px;
+    }
+
+    .wallet__qr img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    @media (max-width: 479px) {
+      .wallet__body {
+        flex-direction: column-reverse;
+      }
+    }
+
+    .warn {
+      margin-top: 1.5rem;
+      font-size: var(--fs-xs);
+    }
+
+    /* ---------- На что идут средства ---------- */
+    .fund-card__icon {
+      display: grid;
+      place-items: center;
+      width: 52px;
+      height: 52px;
+      margin-bottom: 1.1rem;
+      color: var(--gold);
+      background: rgba(201, 162, 39, 0.07);
+      border: 1px solid var(--border-gold);
+      border-radius: 50%;
+    }
+
+    .fund-card__icon svg {
+      width: 26px;
+      height: 26px;
+    }
+
+    /* ---------- Уведомление ---------- */
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px));
+      z-index: 400;
+      max-width: calc(100vw - 2rem);
+      padding: 0.8rem 1.4rem;
+      font-family: var(--font-mono);
+      font-size: var(--fs-sm);
+      color: var(--bg);
+      background: var(--gold);
+      border-radius: var(--radius);
+      box-shadow: var(--glow-gold);
+      opacity: 0;
+      visibility: hidden;
+      transform: translate(-50%, 16px);
+      transition: opacity var(--t-med) var(--ease), transform var(--t-med) var(--ease), visibility 0s linear var(--t-med);
+      pointer-events: none;
+    }
+
+    .toast.is-visible {
+      opacity: 1;
+      visibility: visible;
+      transform: translate(-50%, 0);
+      transition-delay: 0s;
+    }
+
+    .toast--error {
+      color: #fff;
+      background: var(--blood);
+    }
+  </style>
+
+  <!-- i18n подключается БЕЗ defer: словарь страницы регистрируется до перевода DOM -->
+  <script src="js/i18n.js"></script>
+  <script>
+    GildspineI18n.extend({
+      ru: {
+        'donate.meta.title': 'Поддержать проект — GILDSPINE',
+        'donate.meta.description': 'Поддержите GILDSPINE: CloudTips для России и СНГ, криптовалюта для всего мира. Каждый донат — это новые треки, главы и арты.',
+        'donate.page.lead': 'GILDSPINE создаётся независимо. Любая поддержка превращается в новые треки, главы и арты — спасибо, что вы рядом.',
+        'donate.track.label': 'Вы поддерживаете трек:',
+
+        'donate.ru.tag': 'RU / СНГ',
+        'donate.ru.title': 'Для России и СНГ',
+        'donate.ru.text': 'Оплата банковской картой через CloudTips. Сумма — любая, на ваше усмотрение.',
+        'donate.ru.button': 'Поддержать через CloudTips',
+
+        'donate.world.tag': 'WORLD',
+        'donate.world.title': 'Криптовалюта / Мир',
+        'donate.world.text': 'Переводы в криптовалюте из любой страны. Выберите сеть и скопируйте адрес кошелька.',
+        'donate.wallet.address': 'Адрес кошелька',
+        'donate.wallet.memo': 'MEMO / Tag',
+        'donate.wallet.copy': 'Скопировать',
+        'donate.wallet.copied': 'Скопировано',
+        'donate.wallet.copyAria': 'Скопировать адрес: {name}',
+        'donate.wallet.qrAlt': 'QR-код кошелька {name}',
+        'donate.toast.copied': 'Адрес скопирован!',
+        'donate.toast.failed': 'Не удалось скопировать — выделите адрес вручную.',
+        'donate.warn': 'Перед отправкой проверьте сеть и адрес: криптопереводы необратимы. Пожертвования добровольны — подробнее в разделе «Отказ от ответственности».',
+        'donate.warn.link': 'Отказ от ответственности',
+
+        'donate.funds.title': 'На что идут средства',
+        'donate.funds.lead': 'Каждый донат работает на вселенную — вот как именно.',
+        'donate.funds.music.title': 'Новые треки и мастеринг',
+        'donate.funds.music.text': 'Студийное время, плагины, сэмплы и профессиональный мастеринг — чтобы бас бил, а хор звучал из-под земли.',
+        'donate.funds.book.title': 'Новые главы книги',
+        'donate.funds.book.text': 'Время на писательство, редактуру и вычитку: следующие главы «Первой частоты» и тома серии.',
+        'donate.funds.visual.title': 'Визуал и сниппеты',
+        'donate.funds.visual.text': 'Обложки, арты персонажей, клипы, тизеры и вертикальные ролики для соцсетей.',
+        'donate.funds.site.title': 'Развитие сайта и вселенной',
+        'donate.funds.site.text': 'Хостинг, домен, новые разделы сайта, карта мира и архив лора.',
+
+        'footer.docsTitle': 'Документы',
+        'footer.legal': 'Правовая информация',
+        'footer.privacy': 'Конфиденциальность',
+        'footer.terms': 'Условия использования'
+      },
+      en: {
+        'donate.meta.title': 'Support the project — GILDSPINE',
+        'donate.meta.description': 'Support GILDSPINE: CloudTips for Russia and the CIS, crypto for the rest of the world. Every donation becomes new tracks, chapters and art.',
+        'donate.page.lead': 'GILDSPINE is made independently. Every bit of support turns into new tracks, chapters and art — thank you for being here.',
+        'donate.track.label': 'You are supporting the track:',
+
+        'donate.ru.tag': 'RU / CIS',
+        'donate.ru.title': 'For Russia and the CIS',
+        'donate.ru.text': 'Pay by bank card via CloudTips. Any amount, entirely up to you.',
+        'donate.ru.button': 'Support via CloudTips',
+
+        'donate.world.tag': 'WORLD',
+        'donate.world.title': 'Crypto / Worldwide',
+        'donate.world.text': 'Crypto transfers from any country. Choose a network and copy the wallet address.',
+        'donate.wallet.address': 'Wallet address',
+        'donate.wallet.memo': 'MEMO / Tag',
+        'donate.wallet.copy': 'Copy',
+        'donate.wallet.copied': 'Copied',
+        'donate.wallet.copyAria': 'Copy address: {name}',
+        'donate.wallet.qrAlt': 'QR code for the {name} wallet',
+        'donate.toast.copied': 'Address copied!',
+        'donate.toast.failed': 'Couldn’t copy — please select the address manually.',
+        'donate.warn': 'Double-check the network and address before sending: crypto transfers are irreversible. Donations are voluntary — see the Disclaimer for details.',
+        'donate.warn.link': 'Disclaimer',
+
+        'donate.funds.title': 'Where the funds go',
+        'donate.funds.lead': 'Every donation works for the universe — here is how.',
+        'donate.funds.music.title': 'New tracks & mastering',
+        'donate.funds.music.text': 'Studio time, plugins, samples and professional mastering — so the bass hits and the choir rises from underground.',
+        'donate.funds.book.title': 'New book chapters',
+        'donate.funds.book.text': 'Time for writing, editing and proofreading: the next chapters of “The First Frequency” and the volumes that follow.',
+        'donate.funds.visual.title': 'Visuals & snippets',
+        'donate.funds.visual.text': 'Covers, character art, music videos, teasers and vertical clips for social media.',
+        'donate.funds.site.title': 'Growing the site & universe',
+        'donate.funds.site.text': 'Hosting, domain, new site sections, the world map and the lore archive.',
+
+        'footer.docsTitle': 'Documents',
+        'footer.legal': 'Legal information',
+        'footer.privacy': 'Privacy',
+        'footer.terms': 'Terms of use'
+      }
+    });
+  </script>
+  <script src="js/data.js" defer></script>
+</head>
+
+<body id="top">
+
+  <a class="skip-link" href="#main" data-i18n="a11y.skip">Перейти к содержимому</a>
+
+  <!-- ======================= ШАПКА ======================= -->
+  <header class="site-header">
+    <div class="container header__inner">
+      <input type="checkbox" id="nav-toggle" class="nav-toggle"
+             aria-label="Открыть или закрыть меню" data-i18n-attr="aria-label:nav.toggle">
+
+      <a class="logo" href="index.html" aria-label="GILDSPINE — Stay Gold">
+        <span class="logo__name">GILDSPINE</span>
+        <span class="logo__slogan">Stay Gold</span>
+      </a>
+
+      <div class="header__controls">
+        <div class="lang-switch" role="group" aria-label="Выбор языка" data-i18n-attr="aria-label:lang.label">
+          <button type="button" class="lang-btn" data-set-lang="ru">RU</button>
+          <button type="button" class="lang-btn" data-set-lang="en">EN</button>
+        </div>
+        <label for="nav-toggle" class="burger" aria-hidden="true">
+          <span class="burger__bar"></span>
+          <span class="burger__bar"></span>
+          <span class="burger__bar"></span>
+        </label>
+      </div>
+
+      <nav class="main-nav" aria-label="Основная навигация" data-i18n-attr="aria-label:nav.main">
+        <ul class="nav-list">
+          <li><a class="nav-link" href="index.html" data-i18n="nav.home">Главная</a></li>
+          <li><a class="nav-link" href="music.html" data-i18n="nav.music">Музыка</a></li>
+          <li><a class="nav-link" href="book.html" data-i18n="nav.book">Книга</a></li>
+          <li><a class="nav-link" href="lore.html" data-i18n="nav.universe">Вселенная</a></li>
+          <li><a class="nav-link" href="media.html" data-i18n="nav.media">Медиа</a></li>
+          <li><a class="nav-link" href="donate.html" aria-current="page" data-i18n="nav.support">Поддержать</a></li>
+          <li><a class="nav-link" href="about.html" data-i18n="nav.about">О проекте</a></li>
+          <li><a class="nav-link" href="contact.html" data-i18n="nav.contact">Связаться</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+
+    <!-- ======================= ЗАГОЛОВОК ======================= -->
+    <section class="page-hero">
+      <div class="container">
+        <h1 class="page-hero__title" data-i18n="nav.support">Поддержать</h1>
+        <p class="lead" data-i18n="donate.page.lead">GILDSPINE создаётся независимо. Любая поддержка превращается в новые треки, главы и арты — спасибо, что вы рядом.</p>
+      </div>
+    </section>
+
+    <!-- ======================= СПОСОБЫ ПОДДЕРЖКИ ======================= -->
+    <section class="section" id="ways" aria-label="Способы поддержки" data-i18n-attr="aria-label:nav.support">
+      <div class="container container--narrow">
+
+        <!-- Если пришли со страницы трека: donate.html?track=ID -->
+        <div class="track-banner" id="track-banner" hidden>
+          <span class="meta" data-i18n="donate.track.label">Вы поддерживаете трек:</span>
+          <strong class="text-gold" id="track-banner-title"></strong>
+        </div>
+
+        <!-- Блок 1: Россия и СНГ -->
+        <section class="card card--blood pay-block pay-block--ru" id="cloudtips" aria-labelledby="ru-title">
+          <div class="pay-block__head">
+            <span class="tag tag--blood" data-i18n="donate.ru.tag">RU / СНГ</span>
+            <h2 class="pay-block__title" id="ru-title" data-i18n="donate.ru.title">Для России и СНГ</h2>
+          </div>
+          <p class="pay-block__text" data-i18n="donate.ru.text">Оплата банковской картой через CloudTips. Сумма — любая, на ваше усмотрение.</p>
+          <a class="btn btn--solid btn--lg" id="cloudtips-btn" target="_blank" rel="noopener noreferrer"
+             data-i18n="donate.ru.button">Поддержать через CloudTips</a>
+        </section>
+
+        <!-- Блок 2: Криптовалюта / Мир -->
+        <section class="card card--neon pay-block pay-block--world" id="crypto" aria-labelledby="world-title">
+          <div class="pay-block__head">
+            <span class="tag tag--neon" data-i18n="donate.world.tag">WORLD</span>
+            <h2 class="pay-block__title" id="world-title" data-i18n="donate.world.title">Криптовалюта / Мир</h2>
+          </div>
+          <p class="pay-block__text" data-i18n="donate.world.text">Переводы в криптовалюте из любой страны. Выберите сеть и скопируйте адрес кошелька.</p>
+
+          <div class="grid grid--2" id="wallets"></div>
+
+          <p class="meta warn">
+            <span data-i18n="donate.warn">Перед отправкой проверьте сеть и адрес: криптопереводы необратимы. Пожертвования добровольны — подробнее в разделе «Отказ от ответственности».</span>
+            <a href="legal.html#disclaimer" data-i18n="donate.warn.link">Отказ от ответственности</a>
+          </p>
+        </section>
+
+      </div>
+    </section>
+
+    <!-- ======================= НА ЧТО ИДУТ СРЕДСТВА ======================= -->
+    <section class="section section--alt" id="funds" aria-labelledby="funds-title">
+      <div class="container">
+        <div class="section__head">
+          <h2 class="section__title" id="funds-title" data-i18n="donate.funds.title">На что идут средства</h2>
+          <p class="lead" data-i18n="donate.funds.lead">Каждый донат работает на вселенную — вот как именно.</p>
+        </div>
+
+        <div class="grid grid--4">
+
+          <article class="card card--interactive fund-card">
+            <div class="fund-card__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/></svg>
+            </div>
+            <h3 class="card__title" data-i18n="donate.funds.music.title">Новые треки и мастеринг</h3>
+            <p class="card__text" data-i18n="donate.funds.music.text">Студийное время, плагины, сэмплы и профессиональный мастеринг — чтобы бас бил, а хор звучал из-под земли.</p>
+          </article>
+
+          <article class="card card--interactive fund-card">
+            <div class="fund-card__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 5.5C4.5 4 8 4 12 6c4-2 7.5-2 10-.5V19c-2.5-1.5-6-1.5-10 .5-4-2-7.5-2-10-.5z"/><path d="M12 6v13.5"/></svg>
+            </div>
+            <h3 class="card__title" data-i18n="donate.funds.book.title">Новые главы книги</h3>
+            <p class="card__text" data-i18n="donate.funds.book.text">Время на писательство, редактуру и вычитку: следующие главы «Первой частоты» и тома серии.</p>
+          </article>
+
+          <article class="card card--interactive fund-card">
+            <div class="fund-card__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-8 9"/></svg>
+            </div>
+            <h3 class="card__title" data-i18n="donate.funds.visual.title">Визуал и сниппеты</h3>
+            <p class="card__text" data-i18n="donate.funds.visual.text">Обложки, арты персонажей, клипы, тизеры и вертикальные ролики для соцсетей.</p>
+          </article>
+
+          <article class="card card--interactive fund-card">
+            <div class="fund-card__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l8 10-8 10-8-10z"/><path d="M12 2v20M4 12h16" opacity=".6"/></svg>
+            </div>
+            <h3 class="card__title" data-i18n="donate.funds.site.title">Развитие сайта и вселенной</h3>
+            <p class="card__text" data-i18n="donate.funds.site.text">Хостинг, домен, новые разделы сайта, карта мира и архив лора.</p>
+          </article>
+
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Уведомление -->
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <!-- ======================= ПОДВАЛ ======================= -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer__grid">
+
+        <div class="footer__brand">
+          <a class="logo" href="index.html" aria-label="GILDSPINE">GILDSPINE</a>
+          <p class="footer__slogan" data-i18n="footer.slogan">Stay Gold</p>
+          <p class="footer__text" data-i18n="footer.description">Тёмное фэнтези в музыке и литературе. Золото не тускнеет — даже во тьме.</p>
+        </div>
+
+        <nav aria-label="Навигация по сайту" data-i18n-attr="aria-label:footer.navTitle">
+          <h2 class="footer__title" data-i18n="footer.navTitle">Навигация</h2>
+          <ul class="footer__links">
+            <li><a href="index.html" data-i18n="nav.home">Главная</a></li>
+            <li><a href="music.html" data-i18n="nav.music">Музыка</a></li>
+            <li><a href="book.html" data-i18n="nav.book">Книга</a></li>
+            <li><a href="lore.html" data-i18n="nav.universe">Вселенная</a></li>
+            <li><a href="media.html" data-i18n="nav.media">Медиа</a></li>
+            <li><a href="donate.html" data-i18n="nav.support">Поддержать</a></li>
+            <li><a href="about.html" data-i18n="nav.about">О проекте</a></li>
+            <li><a href="contact.html" data-i18n="nav.contact">Связаться</a></li>
+          </ul>
+        </nav>
+
+        <nav aria-label="Документы" data-i18n-attr="aria-label:footer.docsTitle">
+          <h2 class="footer__title" data-i18n="footer.docsTitle">Документы</h2>
+          <ul class="footer__links">
+            <li><a href="legal.html" data-i18n="footer.legal">Правовая информация</a></li>
+            <li><a href="legal.html#privacy" data-i18n="footer.privacy">Конфиденциальность</a></li>
+            <li><a href="legal.html#terms" data-i18n="footer.terms">Условия использования</a></li>
+          </ul>
+        </nav>
+
+      </div>
+
+      <div class="footer__bottom">
+        <p>© <span data-year>2026</span> Gildspine. <span data-i18n="footer.rights">Все права защищены.</span></p>
+        <a class="footer__top-link" href="#top" data-i18n="footer.backToTop">Наверх</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ======================= СКРИПТ СТРАНИЦЫ ======================= -->
+  <script>
+    /* Поддержка: CloudTips + крипто-кошельки из js/data.js, копирование адреса в буфер. */
+    window.addEventListener('DOMContentLoaded', function () {
+      'use strict';
+
+      var I18n = window.GildspineI18n;
+      var D = window.GildspineData;
+      if (!I18n || !D) return;
+
+      var links = D.links;
+
+      // Порядок и подписи кошельков (ключи — из links.crypto в js/data.js)
+      var WALLETS = [
+        { key: 'usdtTrc20', label: 'USDT', network: 'TRC-20' },
+        { key: 'btc', label: 'Bitcoin', network: 'BTC' },
+        { key: 'ton', label: 'TON', network: 'TON' },
+        { key: 'sol', label: 'Phantom / Solana', network: 'SOL' },
+        { key: 'eth', label: 'MetaMask / Ethereum', network: 'ETH · ERC-20' }
+      ];
+
+      var walletsEl = document.getElementById('wallets');
+      var toastEl = document.getElementById('toast');
+      var toastTimer = 0;
+
+      function t(key) {
+        var v = I18n.t(key);
+        return v === undefined ? key : v;
+      }
+
+      function el(tag, className, text) {
+        var node = document.createElement(tag);
+        if (className) node.className = className;
+        if (text !== undefined && text !== null) node.textContent = text;
+        return node;
+      }
+
+      /* ---------- Уведомление ---------- */
+      function showToast(message, isError) {
+        toastEl.textContent = message;
+        toastEl.classList.toggle('toast--error', !!isError);
+        toastEl.classList.add('is-visible');
+        window.clearTimeout(toastTimer);
+        toastTimer = window.setTimeout(function () {
+          toastEl.classList.remove('is-visible');
+        }, 2400);
+      }
+
+      /* ---------- Копирование ---------- */
+      function copyText(text) {
+        if (navigator.clipboard && window.isSecureContext) {
+          return navigator.clipboard.writeText(text);
+        }
+        // запасной вариант для http:// и старых браузеров
+        return new Promise(function (resolve, reject) {
+          var ta = document.createElement('textarea');
+          ta.value = text;
+          ta.setAttribute('readonly', '');
+          ta.style.position = 'fixed';
+          ta.style.opacity = '0';
+          document.body.appendChild(ta);
+          ta.select();
+          var ok = false;
+          try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+          document.body.removeChild(ta);
+          if (ok) resolve(); else reject(new Error('copy failed'));
+        });
+      }
+
+      function copyButton(value, ariaName) {
+        var btn = el('button', 'btn btn--sm', t('donate.wallet.copy'));
+        btn.type = 'button';
+        btn.setAttribute('aria-label', t('donate.wallet.copyAria').replace('{name}', ariaName));
+        btn.addEventListener('click', function () {
+          copyText(value).then(function () {
+            showToast(t('donate.toast.copied'));
+            btn.textContent = t('donate.wallet.copied');
+            window.setTimeout(function () { btn.textContent = t('donate.wallet.copy'); }, 1800);
+          }, function () {
+            showToast(t('donate.toast.failed'), true);
+          });
+        });
+        return btn;
+      }
+
+      /* ---------- Кошельки ---------- */
+      function buildWallet(def) {
+        var w = links.crypto[def.key];
+        if (!w) return null;
+
+        var card = el('article', 'wallet');
+
+        var head = el('div', 'wallet__head');
+        head.appendChild(el('h3', 'wallet__name', def.label));
+        head.appendChild(el('span', 'tag tag--neon', def.network));
+        card.appendChild(head);
+
+        var body = el('div', 'wallet__body');
+        var fields = el('div', 'wallet__fields');
+
+        // адрес + кнопка «Скопировать»
+        var addrBox = el('div');
+        addrBox.appendChild(el('p', 'meta wallet__label', t('donate.wallet.address')));
+        var row = el('div', 'wallet__row');
+        row.appendChild(el('code', 'wallet__address', w.address));
+        row.appendChild(copyButton(w.address, def.label));
+        addrBox.appendChild(row);
+        fields.appendChild(addrBox);
+
+        // MEMO (например, для TON)
+        if (w.memo) {
+          var memoBox = el('div');
+          memoBox.appendChild(el('p', 'meta wallet__label', t('donate.wallet.memo')));
+          var memoRow = el('div', 'wallet__row');
+          memoRow.appendChild(el('code', 'wallet__address', w.memo));
+          memoRow.appendChild(copyButton(w.memo, def.label + ' MEMO'));
+          memoBox.appendChild(memoRow);
+          fields.appendChild(memoBox);
+        }
+        body.appendChild(fields);
+
+        // QR-код (необязателен: если файла нет — блок скрывается)
+        if (w.qr) {
+          var qr = el('div', 'wallet__qr');
+          var img = new Image();
+          img.alt = t('donate.wallet.qrAlt').replace('{name}', def.label);
+          img.loading = 'lazy';
+          img.decoding = 'async';
+          img.addEventListener('error', function () {
+            if (qr.parentNode) qr.parentNode.removeChild(qr);
+          });
+          qr.appendChild(img);
+          img.src = w.qr;
+          body.appendChild(qr);
+        }
+
+        card.appendChild(body);
+        return card;
+      }
+
+      function renderWallets() {
+        walletsEl.textContent = '';
+        WALLETS.forEach(function (def) {
+          var card = buildWallet(def);
+          if (card) walletsEl.appendChild(card);
+        });
+      }
+
+      /* ---------- CloudTips ---------- */
+      var cloudBtn = document.getElementById('cloudtips-btn');
+      if (links.cloudtips && links.cloudtips.url) cloudBtn.href = links.cloudtips.url;
+      else cloudBtn.hidden = true;
+
+      /* ---------- Баннер трека ---------- */
+      var trackId = new URLSearchParams(location.search).get('track');
+      var track = trackId ? D.getTrackById(trackId) : null;
+      if (track) {
+        document.getElementById('track-banner').hidden = false;
+        document.getElementById('track-banner-title').textContent = track.title;
+      }
+
+      renderWallets();
+      document.addEventListener('gildspine:languagechange', renderWallets);
+    });
+  </script>
+</body>
+</html>

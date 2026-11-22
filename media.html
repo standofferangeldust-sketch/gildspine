@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0a0a0f">
+
+  <title data-i18n="media.meta.title">Медиа-архив — GILDSPINE</title>
+  <meta name="description"
+        content="Медиа-архив GILDSPINE: видеоклипы и тизеры, вертикальные сниппеты 9:16 и обои 4K."
+        data-i18n-attr="content:media.meta.description">
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="GILDSPINE">
+  <meta property="og:title" content="GILDSPINE — Media archive">
+  <meta property="og:description" content="Music videos, teasers, 9:16 snippets and 4K wallpapers.">
+  <meta property="og:image" content="assets/images/og-cover.jpg">
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230a0a0f'/%3E%3Cpath d='M16 3l9 13-9 13-9-13z' fill='none' stroke='%23c9a227' stroke-width='2'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="css/style.css">
+
+  <!-- Стили медиа-архива (при желании перенесите в css/style.css) -->
+  <style>
+    /* ---------- Шапка: логотип + слоган ---------- */
+    .logo {
+      display: inline-flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      line-height: 1;
+    }
+
+    .logo__slogan {
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      font-weight: 400;
+      letter-spacing: 0.42em;
+      text-transform: none;
+      color: var(--text-muted);
+      text-shadow: none;
+    }
+
+    /* ---------- Вкладки ---------- */
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      margin-bottom: 2rem;
+    }
+
+    .tab {
+      display: inline-flex;
+      align-items: center;
+      min-height: 46px;
+      padding: 0.6rem 1.15rem;
+      font-family: var(--font-display);
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      background: transparent;
+      border: 1px solid var(--border-gold);
+      border-radius: var(--radius);
+      transition:
+        color var(--t-fast) var(--ease),
+        border-color var(--t-fast) var(--ease),
+        background-color var(--t-fast) var(--ease),
+        box-shadow var(--t-med) var(--ease);
+    }
+
+    .tab:hover {
+      color: var(--gold-bright);
+      border-color: var(--border-gold-strong);
+    }
+
+    .tab[aria-selected='true'] {
+      color: var(--gold);
+      background: rgba(201, 162, 39, 0.12);
+      border-color: var(--gold);
+      box-shadow: var(--glow-gold-soft);
+    }
+
+    .tab-panel[hidden] {
+      display: none;
+    }
+
+    /* ---------- Постеры и заглушки ---------- */
+    .poster {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    .poster img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .poster--placeholder {
+      display: grid;
+      place-items: center;
+      color: var(--gold);
+      background:
+        radial-gradient(70% 55% at 50% 40%, rgba(201, 162, 39, 0.24), transparent 70%),
+        radial-gradient(60% 50% at 88% 108%, rgba(139, 0, 0, 0.4), transparent 70%),
+        repeating-linear-gradient(45deg, rgba(201, 162, 39, 0.06) 0 1px, transparent 1px 14px),
+        linear-gradient(160deg, #1a1710, #0d0d13);
+    }
+
+    .poster__sigil {
+      width: 22%;
+      min-width: 44px;
+      max-width: 90px;
+      opacity: 0.7;
+      filter: drop-shadow(0 0 14px rgba(201, 162, 39, 0.5));
+    }
+
+    .poster__sigil svg {
+      width: 100%;
+      height: auto;
+    }
+
+    .poster__tint {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(70% 60% at 50% 40%, var(--tint, transparent), transparent 70%);
+      opacity: 0.45;
+      pointer-events: none;
+    }
+
+    /* Кнопка Play */
+    .play-badge {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      z-index: 2;
+      display: grid;
+      place-items: center;
+      width: 64px;
+      height: 64px;
+      color: var(--gold);
+      background: rgba(10, 10, 15, 0.7);
+      border: 1px solid var(--gold);
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      transition:
+        color var(--t-med) var(--ease),
+        background-color var(--t-med) var(--ease),
+        box-shadow var(--t-med) var(--ease);
+      pointer-events: none;
+    }
+
+    .play-badge svg {
+      width: 24px;
+      height: 24px;
+      margin-left: 3px;
+      fill: currentColor;
+    }
+
+    .facade:hover .play-badge,
+    .facade:focus-visible .play-badge,
+    .snippet:hover .play-badge,
+    .snippet:focus-visible .play-badge {
+      color: var(--bg);
+      background: var(--gold);
+      box-shadow: var(--glow-gold);
+    }
+
+    .soon-flag {
+      position: absolute;
+      inset: auto 0 0.8rem;
+      z-index: 2;
+      text-align: center;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.28em;
+      color: var(--gold-bright);
+      text-shadow: 0 0 14px rgba(201, 162, 39, 0.5);
+    }
+
+    /* ---------- Видео ---------- */
+    .facade {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      padding: 0;
+      border: 0;
+      background: none;
+      cursor: pointer;
+    }
+
+    .facade--static {
+      cursor: default;
+    }
+
+    .video-card {
+      --card-pad: clamp(1.1rem, 0.8rem + 1.5vw, 1.75rem);
+    }
+
+    .video-card .embed {
+      margin: calc(-1 * var(--card-pad)) calc(-1 * var(--card-pad)) 1.25rem;
+      border: 0;
+      border-radius: 0;
+    }
+
+    .video-card__tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 0.8rem;
+    }
+
+    .video-card__ext {
+      margin-top: 0.9rem;
+    }
+
+    /* ---------- Сниппеты 9:16 ---------- */
+    .snippet-grid {
+      display: grid;
+      gap: 1rem;
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    @media (min-width: 768px) {
+      .snippet-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1.5rem;
+      }
+    }
+
+    .snippet {
+      position: relative;
+      display: block;
+      aspect-ratio: 9 / 16;
+      overflow: hidden;
+      color: var(--text);
+      background: var(--surface);
+      border: 1px solid var(--border-gold);
+      border-radius: var(--radius);
+      transition: border-color var(--t-med) var(--ease), box-shadow var(--t-med) var(--ease), transform var(--t-med) var(--ease);
+    }
+
+    a.snippet:hover,
+    a.snippet:focus-visible {
+      border-color: var(--border-gold-strong);
+      box-shadow: var(--glow-gold-soft);
+      transform: translateY(-3px);
+      text-shadow: none;
+    }
+
+    .snippet__top {
+      position: absolute;
+      inset: 0.6rem 0.6rem auto;
+      z-index: 2;
+      display: flex;
+      justify-content: space-between;
+      gap: 0.5rem;
+    }
+
+    .snippet__top .tag {
+      background: rgba(10, 10, 15, 0.75);
+    }
+
+    .snippet__caption {
+      position: absolute;
+      inset: auto 0 0;
+      z-index: 2;
+      padding: 2.5rem 0.9rem 0.9rem;
+      background: linear-gradient(180deg, transparent, rgba(10, 10, 15, 0.92));
+    }
+
+    .snippet__title {
+      margin: 0;
+      font-family: var(--font-display);
+      font-size: 0.8rem;
+      font-weight: 700;
+      line-height: 1.3;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      overflow-wrap: anywhere;
+    }
+
+    /* ---------- Обои ---------- */
+    .wp-card {
+      --tint: rgba(201, 162, 39, 0.5);
+      border-top: 2px solid var(--wp, var(--gold));
+    }
+
+    .wp-card .card__media {
+      aspect-ratio: 16 / 10;
+    }
+
+    .wp-card .card__media .poster {
+      position: absolute;
+    }
+
+    .wp-card__meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem 1rem;
+      margin-bottom: 0.6rem;
+    }
+
+    .wp-card .card__title {
+      margin-bottom: 1.1rem;
+    }
+  </style>
+
+  <!-- i18n подключается БЕЗ defer: словарь страницы регистрируется до перевода DOM -->
+  <script src="js/i18n.js"></script>
+  <script>
+    GildspineI18n.extend({
+      ru: {
+        'media.meta.title': 'Медиа-архив — GILDSPINE',
+        'media.meta.description': 'Медиа-архив GILDSPINE: видеоклипы и тизеры, вертикальные сниппеты 9:16 и обои 4K.',
+        'media.page.lead': 'Клипы, тизеры, вертикальные ролики и обои из вселенной GILDSPINE — всё в одном архиве.',
+
+        'media.tabs.label': 'Разделы медиа-архива',
+        'media.tab.videos': 'Видеоклипы и тизеры',
+        'media.tab.snippets': 'Сниппеты (9:16)',
+        'media.tab.wallpapers': 'Обои / Wallpaper Drops',
+
+        'media.videos.title': 'Видеоклипы и тизеры',
+        'media.videos.lead': 'Видео загружается только после нажатия на постер — страница остаётся лёгкой и приватной.',
+        'media.kind.clip': 'Клип',
+        'media.kind.teaser': 'Тизер',
+        'media.video.play': 'Смотреть',
+        'media.video.open': 'Открыть на {platform}',
+        'media.video.frameTitle': 'Видеоплеер: {title}',
+
+        'media.snippets.title': 'Сниппеты (9:16)',
+        'media.snippets.lead': 'Короткие вертикальные ролики для TikTok, Shorts и VK Клипов.',
+        'media.snippet.open': 'Смотреть: {title}',
+
+        'media.wallpapers.title': 'Обои / Wallpaper Drops',
+        'media.wallpapers.lead': 'Арты по мотивам Четырёх Бездн в разрешении 4K — бесплатно для личного использования.',
+        'media.wp.drop': 'DROP',
+        'media.wp.download': 'Скачать 4K',
+        'media.wp.downloadAria': 'Скачать обои 4K: {title}',
+
+        'footer.docsTitle': 'Документы',
+        'footer.legal': 'Правовая информация',
+        'footer.privacy': 'Конфиденциальность',
+        'footer.terms': 'Условия использования'
+      },
+      en: {
+        'media.meta.title': 'Media archive — GILDSPINE',
+        'media.meta.description': 'The GILDSPINE media archive: music videos and teasers, vertical 9:16 snippets and 4K wallpapers.',
+        'media.page.lead': 'Music videos, teasers, vertical clips and wallpapers from the GILDSPINE universe — all in one archive.',
+
+        'media.tabs.label': 'Media archive sections',
+        'media.tab.videos': 'Videos & teasers',
+        'media.tab.snippets': 'Snippets (9:16)',
+        'media.tab.wallpapers': 'Wallpaper Drops',
+
+        'media.videos.title': 'Videos & teasers',
+        'media.videos.lead': 'A video loads only after you click its poster — the page stays light and private.',
+        'media.kind.clip': 'Music video',
+        'media.kind.teaser': 'Teaser',
+        'media.video.play': 'Watch',
+        'media.video.open': 'Open on {platform}',
+        'media.video.frameTitle': 'Video player: {title}',
+
+        'media.snippets.title': 'Snippets (9:16)',
+        'media.snippets.lead': 'Short vertical clips for TikTok, Shorts and VK Clips.',
+        'media.snippet.open': 'Watch: {title}',
+
+        'media.wallpapers.title': 'Wallpaper Drops',
+        'media.wallpapers.lead': 'Art inspired by the Four Abysses in 4K — free for personal use.',
+        'media.wp.drop': 'DROP',
+        'media.wp.download': 'Download 4K',
+        'media.wp.downloadAria': 'Download 4K wallpaper: {title}',
+
+        'footer.docsTitle': 'Documents',
+        'footer.legal': 'Legal information',
+        'footer.privacy': 'Privacy',
+        'footer.terms': 'Terms of use'
+      }
+    });
+  </script>
+  <script src="js/data.js" defer></script>
+</head>
+
+<body id="top">
+
+  <a class="skip-link" href="#main" data-i18n="a11y.skip">Перейти к содержимому</a>
+
+  <!-- ======================= ШАПКА ======================= -->
+  <header class="site-header">
+    <div class="container header__inner">
+      <input type="checkbox" id="nav-toggle" class="nav-toggle"
+             aria-label="Открыть или закрыть меню" data-i18n-attr="aria-label:nav.toggle">
+
+      <a class="logo" href="index.html" aria-label="GILDSPINE — Stay Gold">
+        <span class="logo__name">GILDSPINE</span>
+        <span class="logo__slogan">Stay Gold</span>
+      </a>
+
+      <div class="header__controls">
+        <div class="lang-switch" role="group" aria-label="Выбор языка" data-i18n-attr="aria-label:lang.label">
+          <button type="button" class="lang-btn" data-set-lang="ru">RU</button>
+          <button type="button" class="lang-btn" data-set-lang="en">EN</button>
+        </div>
+        <label for="nav-toggle" class="burger" aria-hidden="true">
+          <span class="burger__bar"></span>
+          <span class="burger__bar"></span>
+          <span class="burger__bar"></span>
+        </label>
+      </div>
+
+      <nav class="main-nav" aria-label="Основная навигация" data-i18n-attr="aria-label:nav.main">
+        <ul class="nav-list">
+          <li><a class="nav-link" href="index.html" data-i18n="nav.home">Главная</a></li>
+          <li><a class="nav-link" href="music.html" data-i18n="nav.music">Музыка</a></li>
+          <li><a class="nav-link" href="book.html" data-i18n="nav.book">Книга</a></li>
+          <li><a class="nav-link" href="lore.html" data-i18n="nav.universe">Вселенная</a></li>
+          <li><a class="nav-link" href="media.html" aria-current="page" data-i18n="nav.media">Медиа</a></li>
+          <li><a class="nav-link" href="donate.html" data-i18n="nav.support">Поддержать</a></li>
+          <li><a class="nav-link" href="about.html" data-i18n="nav.about">О проекте</a></li>
+          <li><a class="nav-link" href="contact.html" data-i18n="nav.contact">Связаться</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+
+    <!-- ======================= ЗАГОЛОВОК ======================= -->
+    <section class="page-hero">
+      <div class="container">
+        <h1 class="page-hero__title" data-i18n="nav.media">Медиа</h1>
+        <p class="lead" data-i18n="media.page.lead">Клипы, тизеры, вертикальные ролики и обои из вселенной GILDSPINE — всё в одном архиве.</p>
+      </div>
+    </section>
+
+    <!-- ======================= АРХИВ ======================= -->
+    <section class="section">
+      <div class="container">
+
+        <div class="tabs" role="tablist" aria-label="Разделы медиа-архива" data-i18n-attr="aria-label:media.tabs.label">
+          <button type="button" class="tab" role="tab" id="tab-videos" aria-controls="panel-videos"
+                  aria-selected="true" tabindex="0" data-i18n="media.tab.videos">Видеоклипы и тизеры</button>
+          <button type="button" class="tab" role="tab" id="tab-snippets" aria-controls="panel-snippets"
+                  aria-selected="false" tabindex="-1" data-i18n="media.tab.snippets">Сниппеты (9:16)</button>
+          <button type="button" class="tab" role="tab" id="tab-wallpapers" aria-controls="panel-wallpapers"
+                  aria-selected="false" tabindex="-1" data-i18n="media.tab.wallpapers">Обои / Wallpaper Drops</button>
+        </div>
+
+        <!-- Видеоклипы и тизеры -->
+        <div class="tab-panel" role="tabpanel" id="panel-videos" aria-labelledby="tab-videos">
+          <div class="section__head">
+            <h2 class="section__title" data-i18n="media.videos.title">Видеоклипы и тизеры</h2>
+            <p class="lead" data-i18n="media.videos.lead">Видео загружается только после нажатия на постер — страница остаётся лёгкой и приватной.</p>
+          </div>
+          <div class="grid grid--3" id="video-grid"></div>
+        </div>
+
+        <!-- Сниппеты -->
+        <div class="tab-panel" role="tabpanel" id="panel-snippets" aria-labelledby="tab-snippets" hidden>
+          <div class="section__head">
+            <h2 class="section__title" data-i18n="media.snippets.title">Сниппеты (9:16)</h2>
+            <p class="lead" data-i18n="media.snippets.lead">Короткие вертикальные ролики для TikTok, Shorts и VK Клипов.</p>
+          </div>
+          <div class="snippet-grid" id="snippet-grid"></div>
+        </div>
+
+        <!-- Обои -->
+        <div class="tab-panel" role="tabpanel" id="panel-wallpapers" aria-labelledby="tab-wallpapers" hidden>
+          <div class="section__head">
+            <h2 class="section__title" data-i18n="media.wallpapers.title">Обои / Wallpaper Drops</h2>
+            <p class="lead" data-i18n="media.wallpapers.lead">Арты по мотивам Четырёх Бездн в разрешении 4K — бесплатно для личного использования.</p>
+          </div>
+          <div class="grid grid--2" id="wp-grid"></div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ======================= ПОДВАЛ ======================= -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer__grid">
+
+        <div class="footer__brand">
+          <a class="logo" href="index.html" aria-label="GILDSPINE">GILDSPINE</a>
+          <p class="footer__slogan" data-i18n="footer.slogan">Stay Gold</p>
+          <p class="footer__text" data-i18n="footer.description">Тёмное фэнтези в музыке и литературе. Золото не тускнеет — даже во тьме.</p>
+        </div>
+
+        <nav aria-label="Навигация по сайту" data-i18n-attr="aria-label:footer.navTitle">
+          <h2 class="footer__title" data-i18n="footer.navTitle">Навигация</h2>
+          <ul class="footer__links">
+            <li><a href="index.html" data-i18n="nav.home">Главная</a></li>
+            <li><a href="music.html" data-i18n="nav.music">Музыка</a></li>
+            <li><a href="book.html" data-i18n="nav.book">Книга</a></li>
+            <li><a href="lore.html" data-i18n="nav.universe">Вселенная</a></li>
+            <li><a href="media.html" data-i18n="nav.media">Медиа</a></li>
+            <li><a href="donate.html" data-i18n="nav.support">Поддержать</a></li>
+            <li><a href="about.html" data-i18n="nav.about">О проекте</a></li>
+            <li><a href="contact.html" data-i18n="nav.contact">Связаться</a></li>
+          </ul>
+        </nav>
+
+        <nav aria-label="Документы" data-i18n-attr="aria-label:footer.docsTitle">
+          <h2 class="footer__title" data-i18n="footer.docsTitle">Документы</h2>
+          <ul class="footer__links">
+            <li><a href="legal.html" data-i18n="footer.legal">Правовая информация</a></li>
+            <li><a href="legal.html#privacy" data-i18n="footer.privacy">Конфиденциальность</a></li>
+            <li><a href="legal.html#terms" data-i18n="footer.terms">Условия использования</a></li>
+          </ul>
+        </nav>
+
+      </div>
+
+      <div class="footer__bottom">
+        <p>© <span data-year>2026</span> Gildspine. <span data-i18n="footer.rights">Все права защищены.</span></p>
+        <a class="footer__top-link" href="#top" data-i18n="footer.backToTop">Наверх</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ======================= СКРИПТ СТРАНИЦЫ ======================= -->
+  <script>
+    /* Медиа-архив: вкладки (#videos / #snippets / #wallpapers) и карточки из D.media (js/data.js).
+       Видео-плеер подгружается только по клику на постер. Ссылки с REPLACE_… считаются
+       заглушками — карточка показывает COMING SOON. */
+    window.addEventListener('DOMContentLoaded', function () {
+      'use strict';
+
+      var I18n = window.GildspineI18n;
+      var D = window.GildspineData;
+      if (!I18n || !D || !D.media) return;
+
+      var PLATFORM = { youtube: 'YouTube', vk: 'VK', tiktok: 'TikTok' };
+
+      var SIGIL =
+        '<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">' +
+        '<path d="M32 4 L52 32 L32 60 L12 32 Z"/>' +
+        '<path d="M32 4 V60 M12 32 H52" opacity=".55"/>' +
+        '<path d="M32 17 L42 32 L32 47 L22 32 Z" opacity=".8"/>' +
+        '</svg>';
+
+      var PLAY = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15a1 1 0 0 0 1.52.85l12-7.5a1 1 0 0 0 0-1.7l-12-7.5A1 1 0 0 0 7 4.5z"/></svg>';
+
+      /* ---------- Хелперы ---------- */
+      function t(key) {
+        var v = I18n.t(key);
+        return v === undefined ? key : v;
+      }
+
+      function el(tag, className, text) {
+        var node = document.createElement(tag);
+        if (className) node.className = className;
+        if (text !== undefined && text !== null) node.textContent = text;
+        return node;
+      }
+
+      function isPlaceholder(url) {
+        return !url || /REPLACE/.test(url);
+      }
+
+      function badge(innerHtml) {
+        var b = el('span', 'play-badge');
+        b.setAttribute('aria-hidden', 'true');
+        b.innerHTML = innerHtml; // константная разметка
+        return b;
+      }
+
+      /* Постер: картинка или тёмно-золотая заглушка */
+      function poster(src, alt, tint) {
+        var wrap = el('div', 'poster');
+        function placeholder() {
+          wrap.textContent = '';
+          wrap.classList.add('poster--placeholder');
+          var sigil = el('div', 'poster__sigil');
+          sigil.innerHTML = SIGIL; // константная разметка
+          wrap.appendChild(sigil);
+          if (tint) {
+            var tintEl = el('span', 'poster__tint');
+            tintEl.style.setProperty('--tint', tint);
+            wrap.appendChild(tintEl);
+          }
+        }
+        if (!src) {
+          placeholder();
+          return wrap;
+        }
+        var img = new Image();
+        img.alt = alt || '';
+        img.decoding = 'async';
+        img.loading = 'lazy';
+        img.addEventListener('error', placeholder);
+        wrap.appendChild(img);
+        img.src = src;
+        return wrap;
+      }
+
+      /* ======================================================================
+         ВИДЕО
+         ====================================================================== */
+      function buildVideo(v) {
+        var title = D.tr(v.title);
+        var soon = isPlaceholder(v.embedUrl);
+        var card = el('article', 'card video-card');
+
+        var embed = el('div', 'embed');
+        var facade;
+
+        if (soon) {
+          facade = el('div', 'facade facade--static');
+          facade.appendChild(poster(v.poster, title));
+          facade.appendChild(el('span', 'soon-flag', 'COMING SOON'));
+        } else {
+          facade = el('button', 'facade');
+          facade.type = 'button';
+          facade.setAttribute('aria-label', t('media.video.play') + ': ' + title);
+          facade.appendChild(poster(v.poster, title));
+          facade.appendChild(badge(PLAY));
+          facade.addEventListener('click', function () {
+            var frame = document.createElement('iframe');
+            frame.src = v.embedUrl;
+            frame.title = t('media.video.frameTitle').replace('{title}', title);
+            frame.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen';
+            frame.setAttribute('allowfullscreen', '');
+            frame.setAttribute('referrerpolicy', 'strict-origin-when-cross-origin');
+            frame.loading = 'lazy';
+            embed.textContent = '';
+            embed.appendChild(frame);
+          });
+        }
+        embed.appendChild(facade);
+        card.appendChild(embed);
+
+        var tags = el('div', 'video-card__tags');
+        tags.appendChild(el('span', 'tag', PLATFORM[v.platform] || v.platform));
+        tags.appendChild(el('span', 'tag ' + (v.kind === 'clip' ? 'tag--blood' : 'tag--neon'), t('media.kind.' + v.kind)));
+        card.appendChild(tags);
+
+        card.appendChild(el('h3', 'card__title', title));
+        if (v.date) card.appendChild(el('p', 'meta', D.formatDate(v.date)));
+
+        if (!isPlaceholder(v.watchUrl)) {
+          var ext = el('a', 'btn btn--sm btn--ghost video-card__ext',
+            t('media.video.open').replace('{platform}', PLATFORM[v.platform] || v.platform));
+          ext.href = v.watchUrl;
+          ext.target = '_blank';
+          ext.rel = 'noopener noreferrer';
+          card.appendChild(ext);
+        }
+        return card;
+      }
+
+      function renderVideos() {
+        var grid = document.getElementById('video-grid');
+        grid.textContent = '';
+        D.media.videos.forEach(function (v) { grid.appendChild(buildVideo(v)); });
+      }
+
+      /* ======================================================================
+         СНИППЕТЫ 9:16
+         ====================================================================== */
+      function buildSnippet(s) {
+        var title = D.tr(s.title);
+        var soon = isPlaceholder(s.url);
+        var node;
+
+        if (soon) {
+          node = el('div', 'snippet');
+        } else {
+          node = el('a', 'snippet');
+          node.href = s.url;
+          node.target = '_blank';
+          node.rel = 'noopener noreferrer';
+          node.setAttribute('aria-label', t('media.snippet.open').replace('{title}', title));
+        }
+
+        node.appendChild(poster(s.poster, title));
+
+        var top = el('div', 'snippet__top');
+        top.appendChild(el('span', 'tag', PLATFORM[s.platform] || s.platform));
+        if (s.duration) top.appendChild(el('span', 'tag', s.duration));
+        node.appendChild(top);
+
+        if (soon) node.appendChild(el('span', 'soon-flag', 'COMING SOON'));
+        else node.appendChild(badge(PLAY));
+
+        var caption = el('div', 'snippet__caption');
+        caption.appendChild(el('p', 'snippet__title', title));
+        node.appendChild(caption);
+        return node;
+      }
+
+      function renderSnippets() {
+        var grid = document.getElementById('snippet-grid');
+        grid.textContent = '';
+        D.media.snippets.forEach(function (s) { grid.appendChild(buildSnippet(s)); });
+      }
+
+      /* ======================================================================
+         ОБОИ
+         ====================================================================== */
+      function pad(n) { return (n < 10 ? '0' : '') + n; }
+
+      function buildWallpaper(w, index) {
+        var abyss = D.getAbyssById(w.abyss);
+        var title = abyss ? D.tr(abyss.name) : w.id;
+        var card = el('article', 'card card--interactive wp-card');
+        if (abyss) {
+          card.style.setProperty('--wp', abyss.color);
+          card.style.setProperty('--tint', abyss.glow);
+        }
+
+        var media = el('div', 'card__media');
+        media.appendChild(poster(w.preview, title, abyss ? abyss.glow : null));
+        card.appendChild(media);
+
+        var meta = el('p', 'meta wp-card__meta');
+        meta.appendChild(el('span', '', t('media.wp.drop') + ' ' + pad(index + 1)));
+        meta.appendChild(el('span', '', w.resolution));
+        card.appendChild(meta);
+
+        card.appendChild(el('h3', 'card__title', title));
+
+        var footer = el('div', 'card__footer');
+        var dl = el('a', 'btn btn--solid btn--sm', t('media.wp.download'));
+        dl.href = w.file;
+        dl.setAttribute('download', '');
+        dl.setAttribute('aria-label', t('media.wp.downloadAria').replace('{title}', title));
+        footer.appendChild(dl);
+        card.appendChild(footer);
+        return card;
+      }
+
+      function renderWallpapers() {
+        var grid = document.getElementById('wp-grid');
+        grid.textContent = '';
+        D.media.wallpapers.forEach(function (w, i) { grid.appendChild(buildWallpaper(w, i)); });
+      }
+
+      /* ======================================================================
+         ВКЛАДКИ (доступные: стрелки, Home/End, адрес #videos / #snippets / #wallpapers)
+         ====================================================================== */
+      var tabs = Array.prototype.slice.call(document.querySelectorAll('[role="tab"]'));
+      var IDS = tabs.map(function (tab) { return tab.id.replace('tab-', ''); });
+
+      function activate(id, moveFocus, updateHash) {
+        if (IDS.indexOf(id) === -1) id = IDS[0];
+        tabs.forEach(function (tab) {
+          var active = tab.id === 'tab-' + id;
+          tab.setAttribute('aria-selected', active ? 'true' : 'false');
+          tab.tabIndex = active ? 0 : -1;
+          document.getElementById(tab.getAttribute('aria-controls')).hidden = !active;
+          if (active && moveFocus) tab.focus();
+        });
+        if (updateHash) {
+          try { history.replaceState(null, '', '#' + id); } catch (e) { /* file:// */ }
+        }
+      }
+
+      tabs.forEach(function (tab, i) {
+        tab.addEventListener('click', function () { activate(IDS[i], false, true); });
+        tab.addEventListener('keydown', function (event) {
+          var next = null;
+          if (event.key === 'ArrowRight') next = (i + 1) % tabs.length;
+          else if (event.key === 'ArrowLeft') next = (i - 1 + tabs.length) % tabs.length;
+          else if (event.key === 'Home') next = 0;
+          else if (event.key === 'End') next = tabs.length - 1;
+          if (next !== null) {
+            event.preventDefault();
+            activate(IDS[next], true, true);
+          }
+        });
+      });
+
+      window.addEventListener('hashchange', function () {
+        activate(location.hash.replace('#', ''), false, false);
+      });
+
+      /* ---------- Старт ---------- */
+      function renderAll() {
+        renderVideos();
+        renderSnippets();
+        renderWallpapers();
+      }
+
+      renderAll();
+      activate(location.hash.replace('#', ''), false, false);
+      document.addEventListener('gildspine:languagechange', renderAll);
+    });
+  </script>
+</body>
+</html>
