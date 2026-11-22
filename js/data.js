@@ -535,7 +535,7 @@
     crypto: {
       usdtTrc20: {
         id: 'usdt-trc20',
-        name: 'USDT',
+        name: 'TRON',
         network: 'TRC-20',
         address: 'TUZRbBtcVcNTt7sgJfvRoedv2TVGqWMu7u',
         memo: null,
@@ -568,7 +568,7 @@
       eth: {
         id: 'eth',
         name: 'Ethereum',
-        network: 'ETH (ERC-20)',
+        network: 'ETH',
         address: '0x911FAaEE4942eF2dD1670a5c95e83fAED8EA7827',
         memo: null,
         qr: 'assets/images/qr/eth.png'
