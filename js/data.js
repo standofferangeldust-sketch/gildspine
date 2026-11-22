@@ -593,7 +593,133 @@
       hypeddit:  'https://hypeddit.com/REPLACE_HYPEDDIT_PROFILE'
     },
 
-    email: 'REPLACE_WITH_EMAIL@example.com'
+    email: 'REPLACE_WITH_EMAIL@example.com',
+
+    /* Почты для страницы «Связаться»: общие вопросы и сотрудничество */
+    emails: {
+      general: 'REPLACE_GENERAL@example.com',
+      collab: 'REPLACE_COLLAB@example.com'
+    }
+  };
+
+
+  /* ========================================================================
+     8. АВТОР
+     ======================================================================== */
+  var author = {
+    name: 'Vlad',
+    alias: 'Gildspine',
+    avatar: 'assets/images/author.jpg'
+  };
+
+
+  /* ========================================================================
+     9. МЕДИА-АРХИВ (страница media.html)
+        Любая ссылка с текстом REPLACE_… считается заглушкой: карточка
+        показывает «COMING SOON», пока вы не вставите настоящую ссылку.
+        videos     — embed-плееры: YouTube (youtube-nocookie) или VK (video_ext.php)
+        snippets   — вертикальные ролики 9:16 (TikTok / YouTube Shorts / VK Клипы)
+        wallpapers — обои 4K: abyss — id Бездны из массива abysses
+     ======================================================================== */
+  var media = {
+    videos: [
+      {
+        id: 'video-1',
+        kind: 'clip',
+        platform: 'youtube',
+        title: { ru: 'Golden Spine — официальный клип', en: 'Golden Spine — official video' },
+        date: '2026-10-31',
+        poster: 'assets/images/video1.jpg',
+        embedUrl: 'https://www.youtube-nocookie.com/embed/REPLACE_YOUTUBE_ID_1',
+        watchUrl: 'https://www.youtube.com/watch?v=REPLACE_YOUTUBE_ID_1'
+      },
+      {
+        id: 'video-2',
+        kind: 'teaser',
+        platform: 'vk',
+        title: { ru: 'Первая частота — тизер книги', en: 'The First Frequency — book teaser' },
+        date: '2026-09-20',
+        poster: 'assets/images/video2.jpg',
+        embedUrl: 'https://vk.com/video_ext.php?oid=REPLACE_OID&id=REPLACE_ID&hd=2',
+        watchUrl: 'https://vk.com/video-REPLACE_OID_REPLACE_ID'
+      },
+      {
+        id: 'video-3',
+        kind: 'teaser',
+        platform: 'youtube',
+        title: { ru: 'Night Drift Protocol — тизер', en: 'Night Drift Protocol — teaser' },
+        date: '2026-09-10',
+        poster: 'assets/images/video3.jpg',
+        embedUrl: 'https://www.youtube-nocookie.com/embed/REPLACE_YOUTUBE_ID_3',
+        watchUrl: 'https://www.youtube.com/watch?v=REPLACE_YOUTUBE_ID_3'
+      }
+    ],
+
+    snippets: [
+      {
+        id: 'snippet-1',
+        platform: 'tiktok',
+        title: { ru: 'Золотая жила', en: 'The Golden Vein' },
+        duration: '0:15',
+        poster: 'assets/images/snippet1.jpg',
+        url: 'https://www.tiktok.com/@REPLACE_TIKTOK/video/REPLACE_1'
+      },
+      {
+        id: 'snippet-2',
+        platform: 'youtube',
+        title: { ru: 'Дрифт над Бездной', en: 'Drift above the Abyss' },
+        duration: '0:22',
+        poster: 'assets/images/snippet2.jpg',
+        url: 'https://www.youtube.com/shorts/REPLACE_2'
+      },
+      {
+        id: 'snippet-3',
+        platform: 'vk',
+        title: { ru: 'Реквием для арфы', en: 'Requiem for a Harp' },
+        duration: '0:18',
+        poster: 'assets/images/snippet3.jpg',
+        url: 'https://vk.com/clip-REPLACE_3'
+      },
+      {
+        id: 'snippet-4',
+        platform: 'tiktok',
+        title: { ru: 'Хор из синтезаторов', en: 'Choir of Synthesizers' },
+        duration: '0:12',
+        poster: 'assets/images/snippet4.jpg',
+        url: 'https://www.tiktok.com/@REPLACE_TIKTOK/video/REPLACE_4'
+      }
+    ],
+
+    wallpapers: [
+      {
+        id: 'wp-1',
+        abyss: 'crimson',
+        resolution: '3840 × 2160',
+        preview: 'assets/images/wallpapers/crimson-preview.jpg',
+        file: 'assets/images/wallpapers/crimson-4k.jpg'
+      },
+      {
+        id: 'wp-2',
+        abyss: 'gilded',
+        resolution: '3840 × 2160',
+        preview: 'assets/images/wallpapers/gilded-preview.jpg',
+        file: 'assets/images/wallpapers/gilded-4k.jpg'
+      },
+      {
+        id: 'wp-3',
+        abyss: 'violet',
+        resolution: '3840 × 2160',
+        preview: 'assets/images/wallpapers/violet-preview.jpg',
+        file: 'assets/images/wallpapers/violet-4k.jpg'
+      },
+      {
+        id: 'wp-4',
+        abyss: 'silent',
+        resolution: '3840 × 2160',
+        preview: 'assets/images/wallpapers/silent-preview.jpg',
+        file: 'assets/images/wallpapers/silent-4k.jpg'
+      }
+    ]
   };
 
 
@@ -699,6 +825,8 @@
     abysses: abysses,
     characters: characters,
     links: links,
+    author: author,
+    media: media,
 
     /* хелперы */
     getLang: getLang,
