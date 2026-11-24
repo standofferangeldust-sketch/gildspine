@@ -3,15 +3,22 @@
    js/scene3d.js  ·  3D-фон Hero-блока на Three.js (r149, UMD-сборка)
 
    Что внутри сцены
-     • золотые искры (#c9a227) летят из глубины на камеру;
+     • В центре — процедурная 3D-скульптура розы из античного золота (#c9a227):
+       бутон из 20–26 лепестков по золотой спирали (филлотаксис), изогнутый
+       стебель, чашелистики, два зазубренных листа и острые шипы (ConeGeometry).
+       Металл (metalness 0.92 / roughness 0.22) переливается за счёт процедурной
+       карты окружения (PMREM) и трёх точечных источников: золотого контрового
+       света, багрового #8b0000 отблеска снизу и неонового рим-света.
+     • Золотые искры (#c9a227) летят из глубины на камеру;
      • багровые угли и тёмно-красный туман (#8b0000);
-     • в центре — тёмный кристалл с золотыми гранями, оболочка-икосаэдр,
-       орбитальные осколки и «кольцо частот» (эквалайзер из 64 столбиков);
-     • реакция на мышь, гироскоп (Android) и скролл.
+     • тонкое «кольцо частот» вокруг бутона (отключается флагом SHOW_FREQUENCY_RING);
+     • роза медленно вращается, покачивается и наклоняется за курсором мыши,
+       гироскопом (Android) и скроллом.
 
    Оптимизация
      • анимация частиц считается в вершинном шейдере (CPU почти не нагружен);
-     • на мобильных меньше частиц, DPR ≤ 1.25, без антиалиасинга, 30 fps;
+     • весь бутон — одна геометрия (один draw call), лепестки запечены заранее;
+     • на мобильных меньше частиц, лепестков и сегментов, DPR ≤ 1.25, 30 fps;
      • рендер ставится на паузу, когда Hero не виден или вкладка скрыта;
      • prefers-reduced-motion → один статичный кадр;
      • нет WebGL / не загрузился Three.js → остаётся CSS-фон Hero.
@@ -27,15 +34,128 @@
 (function () {
   'use strict';
 
+  var SHOW_FREQUENCY_RING = true; // false — убрать кольцо-эквалайзер вокруг розы
+
   var COLOR = {
     gold: 0xc9a227,
     goldHot: 0xf6dd86,
     blood: 0x8b0000,
     bloodBright: 0xb31212,
     ember: 0xe03a1e,
-    neon: 0x7b2cbf,
-    body: 0x14141f
+    neon: 0x7b2cbf
   };
+
+  var HEAD_Y = 1.0; // высота центра бутона относительно оси вращения розы
+
+  /* ------------------------------------------------------------------------
+     ПРОЦЕДУРНАЯ ГЕОМЕТРИЯ РОЗЫ (чистые функции, без Three.js)
+     Лепесток — участок поверхности вращения вокруг оси розы: средняя линия
+     интегрируется по углу наклона θ(u) (внутренние лепестки загибаются внутрь
+     и закрывают бутон, внешние отгибаются наружу), ширина задаётся угловым
+     размахом, края слегка отворачиваются и гофрируются.
+     ------------------------------------------------------------------------ */
+  /* @pure-start */
+  var GOLDEN_ANGLE = 2.399963229728653;
+
+  function lerp(a, b, t) { return a + (b - a) * t; }
+  function clamp01(x) { return x < 0 ? 0 : (x > 1 ? 1 : x); }
+  function smooth(a, b, x) { var t = clamp01((x - a) / (b - a)); return t * t * (3 - 2 * t); }
+
+  function addGrid(out, uSeg, vSeg, fn) {
+    var base = out.positions.length / 3;
+    var iu, iv;
+    for (iu = 0; iu <= uSeg; iu++) {
+      for (iv = 0; iv <= vSeg; iv++) {
+        var p = fn(iu / uSeg, (iv / vSeg) * 2 - 1, iu);
+        out.positions.push(p[0], p[1], p[2]);
+      }
+    }
+    var row = vSeg + 1;
+    for (iu = 0; iu < uSeg; iu++) {
+      for (iv = 0; iv < vSeg; iv++) {
+        var a = base + iu * row + iv;
+        var b = a + 1;
+        var c = a + row;
+        var d = c + 1;
+        out.indices.push(a, c, b, b, c, d);
+      }
+    }
+  }
+
+  function petalWidth(u, pointed) {
+    if (pointed) return smooth(0, 0.18, u) * Math.pow(Math.max(0, 1 - u), 0.7) * 1.35;
+    var base = 0.2 + 0.8 * smooth(0, 0.55, u);
+    var tip = u <= 0.6 ? 1 : Math.sqrt(Math.max(0, 1 - Math.pow((u - 0.6) / 0.4, 2)));
+    return base * tip;
+  }
+
+  function addPetal(out, o) {
+    var mr = [o.r0];
+    var my = [o.y0];
+    var r = o.r0;
+    var y = o.y0;
+    var step = o.len / o.uSeg;
+    for (var k = 1; k <= o.uSeg; k++) {
+      var uu = (k - 0.5) / o.uSeg;
+      var th = o.th0 + o.thc * Math.pow(uu, 1.6);
+      r = Math.max(0.015, r + Math.sin(th) * step);
+      y += Math.cos(th) * step;
+      mr.push(r);
+      my.push(y);
+    }
+    addGrid(out, o.uSeg, o.vSeg, function (u, v, iu) {
+      var wp = petalWidth(u, o.pointed);
+      var phi = o.az + v * o.omega * wp;
+      var rr = mr[iu] + o.roll * v * v * Math.pow(u, 2.2) + o.ruffle * Math.sin(v * 7 + o.phase) * Math.pow(u, 3);
+      var yy = my[iu] - o.roll * 0.6 * v * v * Math.pow(u, 2);
+      return [rr * Math.sin(phi), yy, rr * Math.cos(phi)];
+    });
+  }
+
+  function petalParams(i, N, uSeg, vSeg) {
+    var t = N > 1 ? i / (N - 1) : 0;
+    return {
+      az: i * GOLDEN_ANGLE,
+      r0: lerp(0.05, 0.4, Math.pow(t, 1.1)),
+      y0: lerp(0.0, -0.2, t),
+      len: lerp(0.95, 1.5, Math.pow(t, 0.8)),
+      th0: lerp(0.06, 0.26, t),
+      thc: lerp(-0.7, 0.95, smooth(0.2, 1, t)),
+      omega: lerp(1.4, 0.85, t),
+      roll: lerp(0.01, 0.16, smooth(0.35, 1, t)),
+      ruffle: 0.03 * smooth(0.5, 1, t),
+      phase: i * 1.7,
+      pointed: false,
+      uSeg: uSeg,
+      vSeg: vSeg
+    };
+  }
+
+  function roseHeadData(N, uSeg, vSeg) {
+    var out = { positions: [], indices: [] };
+    for (var i = 0; i < N; i++) addPetal(out, petalParams(i, N, uSeg, vSeg));
+    // чашелистики: острые отогнутые вниз
+    for (var s = 0; s < 5; s++) {
+      addPetal(out, {
+        az: s * (Math.PI * 2 / 5) + 0.3, r0: 0.28, y0: -0.2, len: 0.85,
+        th0: 1.9, thc: 0.5, omega: 0.3, roll: 0, ruffle: 0, phase: s,
+        pointed: true, uSeg: uSeg, vSeg: Math.max(4, vSeg >> 1)
+      });
+    }
+    return out;
+  }
+
+  function leafData(uSeg, vSeg, o) {
+    var out = { positions: [], indices: [] };
+    addGrid(out, uSeg, vSeg, function (u, v) {
+      var w = o.width * Math.pow(Math.sin(Math.PI * Math.pow(u, 0.8)), 0.85);
+      var saw = (u * o.teeth) % 1 - 0.5;
+      w *= 1 + o.serr * saw * Math.abs(v);
+      return [u * o.length, o.rise * u - o.droop * u * u + o.fold * Math.abs(v) * w, v * w];
+    });
+    return out;
+  }
+  /* @pure-end */
 
   /* ------------------------------------------------------------------------
      ПРОФИЛЬ ПРОИЗВОДИТЕЛЬНОСТИ
@@ -51,8 +171,14 @@
     var saver = !!conn.saveData || (navigator.deviceMemory && navigator.deviceMemory <= 2);
 
     var profile = mobile
-      ? { sparks: 220, embers: 90, haze: 9, bars: 32, shards: 4, maxDpr: 1.25, fps: 30, antialias: false }
-      : { sparks: 650, embers: 260, haze: 20, bars: 64, shards: 6, maxDpr: 2, fps: 60, antialias: true };
+      ? {
+          sparks: 220, embers: 90, haze: 9, bars: 32, maxDpr: 1.25, fps: 30, antialias: false,
+          petals: 20, uSeg: 12, vSeg: 8, thorns: 5, stemSeg: 28, stemRadial: 8, leafU: 20
+        }
+      : {
+          sparks: 650, embers: 260, haze: 20, bars: 64, maxDpr: 2, fps: 60, antialias: true,
+          petals: 26, uSeg: 18, vSeg: 12, thorns: 7, stemSeg: 48, stemRadial: 12, leafU: 32
+        };
 
     profile.mobile = mobile;
     profile.coarse = coarse;
@@ -62,6 +188,7 @@
       profile.embers = Math.round(profile.embers * 0.5);
       profile.haze = Math.max(4, Math.round(profile.haze * 0.5));
       profile.bars = Math.max(24, Math.round(profile.bars * 0.6));
+      profile.petals = Math.max(20, profile.petals - 4);
       profile.maxDpr = Math.min(profile.maxDpr, 1.25);
       profile.fps = Math.min(profile.fps, 30);
     }
@@ -177,7 +304,7 @@
   }
 
   /* ------------------------------------------------------------------------
-     ТЕКСТУРА ГАЛО (радиальный градиент, рисуется на canvas)
+     ТЕКСТУРЫ И ОКРУЖЕНИЕ
      ------------------------------------------------------------------------ */
   function createHaloTexture(THREE) {
     var size = 128;
@@ -194,6 +321,61 @@
     return new THREE.CanvasTexture(c);
   }
 
+  /* Процедурная карта окружения для золота: тёмная студия с тёплыми софтбоксами,
+     золотым и неоновым бликами и багровым светом снизу → PMREM */
+  function createEnvironment(THREE, renderer, mobile) {
+    try {
+      var w = mobile ? 256 : 512;
+      var h = w / 2;
+      var c = document.createElement('canvas');
+      c.width = w;
+      c.height = h;
+      var g = c.getContext('2d');
+
+      var bg = g.createLinearGradient(0, 0, 0, h);
+      bg.addColorStop(0, '#1b1233');
+      bg.addColorStop(0.42, '#16120d');
+      bg.addColorStop(0.58, '#2c1b09');
+      bg.addColorStop(1, '#3d0909');
+      g.fillStyle = bg;
+      g.fillRect(0, 0, w, h);
+
+      var spot = function (x, y, r, rgb, a) {
+        var rg = g.createRadialGradient(x * w, y * h, 0, x * w, y * h, r * w);
+        rg.addColorStop(0, 'rgba(' + rgb + ',' + a + ')');
+        rg.addColorStop(1, 'rgba(' + rgb + ',0)');
+        g.fillStyle = rg;
+        g.fillRect(0, 0, w, h);
+      };
+      spot(0.18, 0.28, 0.16, '255,236,190', 0.95); // тёплый софтбокс
+      spot(0.62, 0.34, 0.2, '201,162,39', 0.8);    // золотой отсвет
+      spot(0.88, 0.22, 0.14, '123,44,191', 0.7);   // неон
+      spot(0.45, 0.92, 0.3, '139,0,0', 0.9);       // багровый снизу
+      spot(0.05, 0.85, 0.18, '178,18,18', 0.5);
+
+      var strip = function (x, sw, y0, sh, a) {
+        var gr = g.createLinearGradient(0, y0 * h, 0, (y0 + sh) * h);
+        gr.addColorStop(0, 'rgba(255,244,214,0)');
+        gr.addColorStop(0.5, 'rgba(255,244,214,' + a + ')');
+        gr.addColorStop(1, 'rgba(255,244,214,0)');
+        g.fillStyle = gr;
+        g.fillRect(x * w, y0 * h, sw * w, sh * h);
+      };
+      strip(0.32, 0.012, 0.18, 0.4, 0.9); // узкие «лампы» дают чёткие блики на гранях
+      strip(0.74, 0.02, 0.2, 0.36, 0.75);
+
+      var tex = new THREE.CanvasTexture(c);
+      tex.mapping = THREE.EquirectangularReflectionMapping;
+      var pmrem = new THREE.PMREMGenerator(renderer);
+      var rt = pmrem.fromEquirectangular(tex);
+      tex.dispose();
+      pmrem.dispose();
+      return rt;
+    } catch (err) {
+      return null; // без карты роза освещается только точечными источниками
+    }
+  }
+
   function clamp(v, min, max) {
     return Math.min(max, Math.max(min, v));
   }
@@ -202,6 +384,155 @@
     if (!canvas) return;
     canvas.style.display = 'none';
     if (canvas.parentElement) canvas.parentElement.classList.add('no-webgl');
+  }
+
+  /* ------------------------------------------------------------------------
+     РОЗА: сборка мешей
+     ------------------------------------------------------------------------ */
+  function geometryFromData(THREE, data) {
+    var geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(data.positions), 3));
+    geo.setIndex(data.indices);
+    geo.computeVertexNormals();
+    return geo;
+  }
+
+  // изогнутый стебель с утолщением к основанию; нормали считаются явно (без шва)
+  function createStem(THREE, curve, seg, radial, rTop, rBottom) {
+    var frames = curve.computeFrenetFrames(seg, false);
+    var pos = [];
+    var nor = [];
+    var idx = [];
+    var i, j;
+
+    for (i = 0; i <= seg; i++) {
+      var p = curve.getPointAt(i / seg);
+      var rad = lerp(rTop, rBottom, smooth(0, 1, i / seg));
+      var N = frames.normals[i];
+      var B = frames.binormals[i];
+      for (j = 0; j <= radial; j++) {
+        var a = (j / radial) * Math.PI * 2;
+        var cx = Math.cos(a);
+        var sx = Math.sin(a);
+        var nx = N.x * cx + B.x * sx;
+        var ny = N.y * cx + B.y * sx;
+        var nz = N.z * cx + B.z * sx;
+        pos.push(p.x + nx * rad, p.y + ny * rad, p.z + nz * rad);
+        nor.push(nx, ny, nz);
+      }
+    }
+    var row = radial + 1;
+    for (i = 0; i < seg; i++) {
+      for (j = 0; j < radial; j++) {
+        var a0 = i * row + j;
+        var b0 = a0 + 1;
+        var c0 = a0 + row;
+        var d0 = c0 + 1;
+        idx.push(a0, c0, b0, b0, c0, d0);
+      }
+    }
+
+    var geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(pos), 3));
+    geo.setAttribute('normal', new THREE.BufferAttribute(new Float32Array(nor), 3));
+    geo.setIndex(idx);
+    return { geometry: geo, frames: frames };
+  }
+
+  function createRose(THREE, profile, envMap) {
+    var goldMat = new THREE.MeshStandardMaterial({
+      color: COLOR.gold,
+      metalness: 0.92,
+      roughness: 0.22,
+      side: THREE.DoubleSide,
+      envMap: envMap || null,
+      envMapIntensity: 1.0
+    });
+
+    var plant = new THREE.Group();
+    plant.position.y = HEAD_Y;
+
+    /* ---- бутон: лепестки + чашелистики одной геометрией ---- */
+    var head = new THREE.Mesh(
+      geometryFromData(THREE, roseHeadData(profile.petals, profile.uSeg, profile.vSeg)),
+      goldMat
+    );
+    plant.add(head);
+
+    /* ---- завязь под бутоном ---- */
+    var hipGeo = new THREE.SphereGeometry(0.3, profile.mobile ? 14 : 22, profile.mobile ? 10 : 16);
+    var hip = new THREE.Mesh(hipGeo, goldMat);
+    hip.scale.set(1, 0.85, 1);
+    hip.position.y = -0.28;
+    plant.add(hip);
+
+    /* ---- стебель ---- */
+    var curve = new THREE.CatmullRomCurve3([
+      new THREE.Vector3(0, -0.28, 0),
+      new THREE.Vector3(0.05, -0.8, 0.04),
+      new THREE.Vector3(-0.09, -1.5, -0.05),
+      new THREE.Vector3(0.12, -2.2, 0.06),
+      new THREE.Vector3(0.04, -2.8, -0.03),
+      new THREE.Vector3(0, -3.2, 0)
+    ]);
+    var R_TOP = 0.05;
+    var R_BOTTOM = 0.085;
+    var stem = createStem(THREE, curve, profile.stemSeg, profile.stemRadial, R_TOP, R_BOTTOM);
+    plant.add(new THREE.Mesh(stem.geometry, goldMat));
+
+    function outward(s, angle) {
+      var f = stem.frames;
+      var i = Math.round(s * profile.stemSeg);
+      return new THREE.Vector3()
+        .addScaledVector(f.normals[i], Math.cos(angle))
+        .addScaledVector(f.binormals[i], Math.sin(angle))
+        .normalize();
+    }
+
+    /* ---- шипы: ConeGeometry, острые, загнуты вниз ---- */
+    var coneGeo = new THREE.ConeGeometry(1, 1, 10, 1);
+    var yAxis = new THREE.Vector3(0, 1, 0);
+    var thornCount = profile.thorns;
+    for (var k = 0; k < thornCount; k++) {
+      var s = lerp(0.14, 0.9, thornCount > 1 ? k / (thornCount - 1) : 0);
+      var angle = k * 2.399963229728653 + 0.4;
+      var P = curve.getPointAt(s);
+      var out = outward(s, angle);
+      var T = stem.frames.tangents[Math.round(s * profile.stemSeg)]; // направлен вниз по стеблю
+      var dir = out.clone().multiplyScalar(0.95).addScaledVector(T, 0.55).normalize();
+
+      var rs = lerp(R_TOP, R_BOTTOM, smooth(0, 1, s));
+      var len = lerp(0.28, 0.46, s);
+      var baseR = lerp(0.055, 0.09, s);
+
+      var thorn = new THREE.Mesh(coneGeo, goldMat);
+      thorn.scale.set(baseR, len, baseR);
+      thorn.quaternion.setFromUnitVectors(yAxis, dir);
+      thorn.position.copy(P).addScaledVector(out, rs * 0.8).addScaledVector(dir, len * 0.5 - 0.02);
+      plant.add(thorn);
+    }
+
+    /* ---- два заострённых зазубренных листа ---- */
+    var leafPlacements = [{ s: 0.36, a: 0.6 }, { s: 0.58, a: 0.6 + Math.PI }];
+    leafPlacements.forEach(function (lp) {
+      var leaf = leafData(profile.leafU, 6, {
+        width: 0.28, length: 1.15, teeth: 16, serr: 0.16, rise: 0.25, droop: 0.55, fold: 0.35
+      });
+      var geo = geometryFromData(THREE, leaf);
+
+      var out = outward(lp.s, lp.a);
+      var up = stem.frames.tangents[Math.round(lp.s * profile.stemSeg)].clone().negate();
+      var X = out.clone().multiplyScalar(0.9).addScaledVector(up, 0.45).normalize();
+      var Z = new THREE.Vector3().crossVectors(X, up).normalize();
+      var Y = new THREE.Vector3().crossVectors(Z, X);
+      var m = new THREE.Matrix4().makeBasis(X, Y, Z);
+      var origin = curve.getPointAt(lp.s).addScaledVector(out, lerp(R_TOP, R_BOTTOM, smooth(0, 1, lp.s)) * 0.6);
+      m.setPosition(origin);
+      geo.applyMatrix4(m);
+      plant.add(new THREE.Mesh(geo, goldMat));
+    });
+
+    return { plant: plant, material: goldMat };
   }
 
   /* ------------------------------------------------------------------------
@@ -248,7 +579,7 @@
       uSpreadX: { value: 1 }
     };
 
-    /* ---- частицы ---- */
+    /* ---- частицы (фон сохранён из прежней версии) ---- */
     var haze = createParticles(THREE, {
       count: profile.haze, color: COLOR.blood, size: 180, alpha: 0.3, soft: 1.0, twinkle: 0,
       speed: [0.25, 0.7], scale: [0.7, 1.6], depth: 60, spreadX: 26, halfH: 15, rise: 0.03, swing: 2.0
@@ -268,69 +599,31 @@
 
     scene.add(haze, embers, sparks);
 
-    /* ---- освещение (неподвижное — грани кристалла «бегают» бликами) ---- */
-    scene.add(new THREE.AmbientLight(0x222233, 0.9));
+    /* ---- освещение (неподвижное — блики «бегают» по лепесткам при вращении) ---- */
+    scene.add(new THREE.AmbientLight(0x221a10, 0.5));
 
-    var goldLight = new THREE.PointLight(COLOR.gold, 1.6, 0);
-    goldLight.position.set(3.5, 3, 5);
-    var bloodLight = new THREE.PointLight(COLOR.bloodBright, 1.8, 0);
-    bloodLight.position.set(-4, -2, 3);
-    var neonLight = new THREE.PointLight(COLOR.neon, 1.6, 0);
-    neonLight.position.set(0, 4, -2);
-    scene.add(goldLight, bloodLight, neonLight);
+    var goldBack = new THREE.PointLight(COLOR.gold, 2.4, 0);       // золотой контровой свет
+    goldBack.position.set(2.4, 3.8, -3.2);
+    var goldFill = new THREE.PointLight(COLOR.gold, 0.9, 0);       // мягкий фронтальный подсвет
+    goldFill.position.set(3.5, 2.2, 5);
+    var bloodUnder = new THREE.PointLight(COLOR.blood, 2.4, 0);    // кроваво-красный отблеск снизу
+    bloodUnder.position.set(-1.8, -3.0, 2.6);
+    var neonRim = new THREE.PointLight(COLOR.neon, 1.1, 0);        // неоновый рим-свет
+    neonRim.position.set(-3, 2.5, -2);
+    scene.add(goldBack, goldFill, bloodUnder, neonRim);
 
-    /* ---- кристалл ---- */
-    var crystal = new THREE.Group();
-    scene.add(crystal);
+    /* ---- карта окружения для металла ---- */
+    var envRT = createEnvironment(THREE, renderer, profile.mobile);
 
-    var coreGeo = new THREE.OctahedronGeometry(1, 0);
-    var coreMat = new THREE.MeshStandardMaterial({
-      color: COLOR.body,
-      metalness: 0.55,
-      roughness: 0.3,
-      flatShading: true,
-      emissive: 0x1a0000,
-      emissiveIntensity: 0.6
-    });
-    var goldLineMat = new THREE.LineBasicMaterial({ color: COLOR.gold, transparent: true, opacity: 0.95 });
+    /* ---- роза ---- */
+    var rose = new THREE.Group();        // позиция, масштаб, наклон за курсором
+    scene.add(rose);
+    var spin = new THREE.Group();        // медленное вращение вокруг оси
+    rose.add(spin);
+    var built = createRose(THREE, profile, envRT ? envRT.texture : null);
+    spin.add(built.plant);
 
-    var core = new THREE.Group();
-    core.scale.set(0.85, 1.6, 0.85);
-    core.add(new THREE.Mesh(coreGeo, coreMat));
-    var coreEdgesGeo = new THREE.EdgesGeometry(coreGeo);
-    core.add(new THREE.LineSegments(coreEdgesGeo, goldLineMat));
-    crystal.add(core);
-
-    // оболочка-икосаэдр (золотой каркас)
-    var shellGeo = new THREE.IcosahedronGeometry(1.75, 0);
-    var shellEdgesGeo = new THREE.EdgesGeometry(shellGeo);
-    var shellMat = new THREE.LineBasicMaterial({ color: COLOR.gold, transparent: true, opacity: 0.22 });
-    var shell = new THREE.LineSegments(shellEdgesGeo, shellMat);
-    crystal.add(shell);
-
-    // орбитальные осколки
-    var shardGeo = new THREE.OctahedronGeometry(0.17, 0);
-    var shardEdgesGeo = new THREE.EdgesGeometry(shardGeo);
-    var shards = [];
-    var shardOrbit = new THREE.Group();
-    crystal.add(shardOrbit);
-    for (var s = 0; s < profile.shards; s++) {
-      var shard = new THREE.Group();
-      shard.scale.set(1, 1.9, 1);
-      shard.add(new THREE.Mesh(shardGeo, coreMat));
-      shard.add(new THREE.LineSegments(shardEdgesGeo, goldLineMat));
-      shardOrbit.add(shard);
-      shards.push({
-        obj: shard,
-        angle: (s / profile.shards) * Math.PI * 2,
-        radius: 2.25 + (s % 3) * 0.22,
-        speed: 0.22 + (s % 3) * 0.07,
-        y: (s % 2 === 0 ? 1 : -1) * (0.35 + (s % 3) * 0.3),
-        phase: s * 1.3
-      });
-    }
-
-    // гало за кристаллом
+    // гало за бутоном
     var haloTex = createHaloTexture(THREE);
     var halo = new THREE.Sprite(new THREE.SpriteMaterial({
       map: haloTex,
@@ -340,44 +633,55 @@
       blending: THREE.AdditiveBlending
     }));
     halo.scale.set(10, 10, 1);
-    halo.position.z = -1.5;
-    crystal.add(halo);
+    halo.position.set(0, HEAD_Y, -1.6);
+    rose.add(halo);
 
-    /* ---- кольцо частот ---- */
-    var RING_R = 2.9;
-    var ringTilt = new THREE.Group();
-    ringTilt.rotation.set(1.1, 0, 0.25);
-    crystal.add(ringTilt);
+    /* ---- кольцо частот вокруг бутона (необязательно) ---- */
+    var RING_R = 2.5;
     var ringSpin = new THREE.Group();
-    ringTilt.add(ringSpin);
-
-    var torusGeo = new THREE.TorusGeometry(RING_R, 0.012, 6, 128);
-    var torus = new THREE.Mesh(torusGeo, new THREE.MeshBasicMaterial({ color: COLOR.gold, transparent: true, opacity: 0.75 }));
-    torus.rotation.x = Math.PI / 2;
-    ringSpin.add(torus);
-
-    var torusOuterGeo = new THREE.TorusGeometry(RING_R * 1.18, 0.008, 6, 128);
-    var torusOuter = new THREE.Mesh(torusOuterGeo, new THREE.MeshBasicMaterial({ color: COLOR.bloodBright, transparent: true, opacity: 0.5 }));
-    torusOuter.rotation.x = Math.PI / 2;
-    ringSpin.add(torusOuter);
-
-    var barGeo = new THREE.BoxGeometry(0.035, 1, 0.035);
-    var barMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.9 });
-    var bars = new THREE.InstancedMesh(barGeo, barMat, profile.bars);
-    var colGold = new THREE.Color(COLOR.gold);
-    var colBlood = new THREE.Color(COLOR.bloodBright);
-    var tmpColor = new THREE.Color();
-    for (var b = 0; b < profile.bars; b++) {
-      var mixAmt = 0.5 + 0.5 * Math.sin((b / profile.bars) * Math.PI * 2 * 2);
-      tmpColor.copy(colGold).lerp(colBlood, mixAmt * 0.85);
-      bars.setColorAt(b, tmpColor);
-    }
-    bars.frustumCulled = false;
-    ringSpin.add(bars);
-
+    var bars = null;
     var dummy = new THREE.Object3D();
 
+    if (SHOW_FREQUENCY_RING) {
+      var ringTilt = new THREE.Group();
+      ringTilt.position.y = HEAD_Y;
+      ringTilt.rotation.set(1.1, 0, 0.25);
+      rose.add(ringTilt);
+      ringTilt.add(ringSpin);
+
+      var torus = new THREE.Mesh(
+        new THREE.TorusGeometry(RING_R, 0.012, 6, 128),
+        new THREE.MeshBasicMaterial({ color: COLOR.gold, transparent: true, opacity: 0.75 })
+      );
+      torus.rotation.x = Math.PI / 2;
+      ringSpin.add(torus);
+
+      var torusOuter = new THREE.Mesh(
+        new THREE.TorusGeometry(RING_R * 1.18, 0.008, 6, 128),
+        new THREE.MeshBasicMaterial({ color: COLOR.bloodBright, transparent: true, opacity: 0.5 })
+      );
+      torusOuter.rotation.x = Math.PI / 2;
+      ringSpin.add(torusOuter);
+
+      bars = new THREE.InstancedMesh(
+        new THREE.BoxGeometry(0.035, 1, 0.035),
+        new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.9 }),
+        profile.bars
+      );
+      var colGold = new THREE.Color(COLOR.gold);
+      var colBlood = new THREE.Color(COLOR.bloodBright);
+      var tmpColor = new THREE.Color();
+      for (var b = 0; b < profile.bars; b++) {
+        var mixAmt = 0.5 + 0.5 * Math.sin((b / profile.bars) * Math.PI * 2 * 2);
+        tmpColor.copy(colGold).lerp(colBlood, mixAmt * 0.85);
+        bars.setColorAt(b, tmpColor);
+      }
+      bars.frustumCulled = false;
+      ringSpin.add(bars);
+    }
+
     function updateBars(t) {
+      if (!bars) return;
       var n = profile.bars;
       for (var i = 0; i < n; i++) {
         var a = (i / n) * Math.PI * 2;
@@ -432,6 +736,9 @@
     }
 
     /* ---- размеры и адаптивная компоновка ---- */
+    var baseY = 0;
+    var baseScale = 1;
+
     function layout() {
       var w = Math.max(1, host.clientWidth);
       var h = Math.max(1, host.clientHeight);
@@ -444,15 +751,19 @@
       var aspect = w / h;
       camera.aspect = aspect;
 
-      // масштаб кристалла и расстояние камеры: в портретной ориентации всё меньше и выше
+      // масштаб розы и расстояние камеры: в портретной ориентации всё меньше и выше
       var s = aspect < 1 ? clamp(aspect * 1.25, 0.5, 1) : 1;
-      var dist = Math.max(7, (3.0 * s) / (FOV_TAN * aspect));
+      var dist = Math.max(7, (2.9 * s) / (FOV_TAN * aspect));
       camera.position.z = dist;
       camera.updateProjectionMatrix();
 
-      crystal.scale.setScalar(s);
       var halfH = FOV_TAN * dist;
-      crystal.position.y = aspect < 1 ? 0.42 * halfH : 0.04 * halfH;
+      var headTarget = aspect < 1 ? 0.42 * halfH : 0.15 * halfH; // где на экране окажется бутон
+
+      baseScale = s;
+      baseY = headTarget - HEAD_Y * s;
+      rose.scale.setScalar(s);
+      rose.position.y = baseY;
 
       shared.uSpreadX.value = clamp(aspect / 1.2, 0.45, 1);
 
@@ -462,7 +773,6 @@
 
     /* ---- кадр ---- */
     var time = 0;
-    var tmpLookY = 0;
 
     function update(dt) {
       time += dt;
@@ -473,47 +783,30 @@
       input.x += (input.tx - input.x) * k;
       input.y += (input.ty - input.y) * k;
 
-      var pulse = 1 + 0.03 * Math.sin(time * 2.0);
-      core.scale.set(0.85 * pulse, 1.6 * pulse, 0.85 * pulse);
-      core.rotation.y += dt * 0.35;
-      core.rotation.x = Math.sin(time * 0.3) * 0.12 + input.y * 0.3;
+      // роза: медленное вращение, покачивание и наклон за курсором
+      spin.rotation.y += dt * 0.22;
+      spin.rotation.z = Math.sin(time * 0.7) * 0.035;
 
-      crystal.rotation.y = input.x * 0.55 + input.scroll * 1.2;
-      crystal.rotation.x = -input.y * 0.12;
-
-      shell.rotation.y -= dt * 0.18;
-      shell.rotation.x += dt * 0.07;
-
-      ringSpin.rotation.y += dt * 0.16;
-      ringTilt.rotation.x = 1.1 + input.y * 0.22;
-      ringTilt.rotation.z = 0.25 + input.x * 0.12;
-
-      shardOrbit.rotation.y += dt * 0.1;
-      for (var i = 0; i < shards.length; i++) {
-        var sh = shards[i];
-        sh.angle += dt * sh.speed;
-        sh.obj.position.set(
-          Math.cos(sh.angle) * sh.radius,
-          sh.y + Math.sin(time * 0.8 + sh.phase) * 0.15,
-          Math.sin(sh.angle) * sh.radius
-        );
-        sh.obj.rotation.y += dt * 0.9;
-        sh.obj.rotation.z += dt * 0.4;
-      }
+      rose.rotation.y = input.x * 0.5 + input.scroll * 1.2;
+      rose.rotation.z = -input.x * 0.24 + Math.sin(time * 0.6) * 0.045;
+      rose.rotation.x = 0.14 - input.y * 0.26 + Math.sin(time * 0.5) * 0.03;
+      rose.position.y = baseY + Math.sin(time * 0.9) * 0.07 * baseScale;
+      rose.position.z = -input.scroll * 3.5;
 
       halo.material.opacity = 0.5 + 0.1 * Math.sin(time * 1.3);
 
-      updateBars(time);
+      if (SHOW_FREQUENCY_RING) {
+        ringSpin.rotation.y += dt * 0.16;
+        updateBars(time);
+      }
 
-      // параллакс камеры + уход вглубь при скролле
+      // параллакс камеры
       var baseZ = camera.position.z;
       camera.position.x += (input.x * 0.7 - camera.position.x) * k;
       camera.position.y += (input.y * 0.45 - camera.position.y) * k;
-      tmpLookY = crystal.position.y * 0.6;
-      camera.lookAt(0, tmpLookY, 0);
+      camera.lookAt(0, (baseY + HEAD_Y * baseScale) * 0.5, 0);
       camera.position.z = baseZ;
 
-      crystal.position.z = -input.scroll * 3.5;
       canvas.style.opacity = String((1 - input.scroll * 0.85).toFixed(3));
     }
 
@@ -624,6 +917,7 @@
     if (reduced) {
       // статичный кадр без анимации
       time = 2.5;
+      spin.rotation.y = 0.6;
       update(0);
       renderFrame();
       canvas.classList.add('is-ready');
@@ -651,6 +945,7 @@
           obj.material.dispose();
         }
       });
+      if (envRT) envRT.dispose();
       renderer.dispose();
       delete canvas.__gildspineScene;
     }
