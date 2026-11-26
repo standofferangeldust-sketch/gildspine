@@ -3,23 +3,33 @@
    js/scene3d.js  ·  3D-фон Hero-блока на Three.js (r149, UMD-сборка)
 
    Что внутри сцены
-     • В центре — процедурная 3D-скульптура розы из античного золота (#c9a227):
-       бутон из 20–26 лепестков по золотой спирали (филлотаксис), изогнутый
-       стебель, чашелистики, два зазубренных листа и острые шипы (ConeGeometry).
-       Металл (metalness 0.92 / roughness 0.22) переливается за счёт процедурной
-       карты окружения (PMREM) и трёх точечных источников: золотого контрового
-       света, багрового #8b0000 отблеска снизу и неонового рим-света.
-     • Золотые искры (#c9a227) летят из глубины на камеру;
-     • багровые угли и тёмно-красный туман (#8b0000);
-     • тонкое «кольцо частот» вокруг бутона (отключается флагом SHOW_FREQUENCY_RING);
-     • роза медленно вращается, покачивается и наклоняется за курсором мыши,
+     • В центре — процедурная 3D-скульптура розы из античного золота (#c9a227).
+       Классический благородный силуэт: высота бутона ≈ 1.15–1.2 ширины, низ
+       плавно сужается к чашелистикам («бокал» с округлыми боками), верхняя треть
+       раскрыта мягким S-образным отгибом кромок. 26 лепестков по спирали
+       Фибоначчи в 5 ярусах: стройный заострённый центр → объёмные средние
+       ярусы → внешние лепестки, отогнутые только по верхней кромке.
+       Бутон наклонён к зрителю на ≈15°, на лепестках — золотой блик по
+       свободным краям и глубокая багрово-золотая тень между слоями.
+     • Изогнутый стебель, два зазубренных листа и острые шипы (ConeGeometry).
+     • Металл: metalness 0.92 / roughness 0.22, процедурная карта окружения
+       (PMREM) + золотой контровой свет, багровый #8b0000 отблеск снизу,
+       неоновый рим-свет.
+     • Золотые искры, багровые угли и туман, гало, тонкое «кольцо частот»
+       (отключается флагом SHOW_FREQUENCY_RING).
+     • Роза медленно вращается, покачивается и наклоняется за курсором мыши,
        гироскопом (Android) и скроллом.
 
-   Оптимизация
+   Чёткость
+     • WebGLRenderer: alpha + antialias + powerPreference 'high-performance';
+       pixelRatio = min(devicePixelRatio, 2) на ВСЕХ устройствах, включая телефоны;
+     • высокая детализация геометрии: лепестки, стебель, шипы, кольца, завязь;
+     • процедурные текстуры (гало, карта окружения) — от 256×256 и выше.
+
+   Производительность
      • анимация частиц считается в вершинном шейдере (CPU почти не нагружен);
      • весь бутон — одна геометрия (один draw call), лепестки запечены заранее;
-     • на мобильных меньше частиц, лепестков и сегментов, DPR ≤ 1.25, 30 fps;
-     • рендер ставится на паузу, когда Hero не виден или вкладка скрыта;
+     • рендер на паузе, когда Hero не виден или вкладка скрыта;
      • prefers-reduced-motion → один статичный кадр;
      • нет WebGL / не загрузился Three.js → остаётся CSS-фон Hero.
 
@@ -45,7 +55,8 @@
     neon: 0x7b2cbf
   };
 
-  var HEAD_Y = 1.0; // высота центра бутона относительно оси вращения розы
+  var BUD_CENTER_Y = 1.1; // центр бутона в локальных координатах растения (бутон: y −0.15 … 2.36)
+  var HEAD_Y = 1.3;       // высота центра бутона относительно оси вращения розы
 
   /* ------------------------------------------------------------------------
      ПРОЦЕДУРНАЯ ГЕОМЕТРИЯ РОЗЫ (чистые функции, без Three.js)
@@ -55,19 +66,27 @@
      размахом, края слегка отворачиваются и гофрируются.
      ------------------------------------------------------------------------ */
   /* @pure-start */
-  var GOLDEN_ANGLE = 2.399963229728653;
+  var GOLDEN_ANGLE = 2.399963229728653; // 137.5077° — спираль Фибоначчи
 
   function lerp(a, b, t) { return a + (b - a) * t; }
   function clamp01(x) { return x < 0 ? 0 : (x > 1 ? 1 : x); }
   function smooth(a, b, x) { var t = clamp01((x - a) / (b - a)); return t * t * (3 - 2 * t); }
+  function smoother(a, b, x) { var t = clamp01((x - a) / (b - a)); return t * t * t * (t * (t * 6 - 15) + 10); }
 
-  function addGrid(out, uSeg, vSeg, fn) {
+  // сетка поверхности (u вдоль лепестка, v поперёк) + необязательные цвета вершин
+  function addGrid(out, uSeg, vSeg, fn, colorFn) {
     var base = out.positions.length / 3;
     var iu, iv;
     for (iu = 0; iu <= uSeg; iu++) {
       for (iv = 0; iv <= vSeg; iv++) {
-        var p = fn(iu / uSeg, (iv / vSeg) * 2 - 1, iu);
+        var u = iu / uSeg;
+        var v = (iv / vSeg) * 2 - 1;
+        var p = fn(u, v, iu);
         out.positions.push(p[0], p[1], p[2]);
+        if (colorFn) {
+          var c = colorFn(u, v);
+          out.colors.push(c[0], c[1], c[2]);
+        }
       }
     }
     var row = vSeg + 1;
@@ -75,21 +94,97 @@
       for (iv = 0; iv < vSeg; iv++) {
         var a = base + iu * row + iv;
         var b = a + 1;
-        var c = a + row;
-        var d = c + 1;
-        out.indices.push(a, c, b, b, c, d);
+        var c2 = a + row;
+        var d = c2 + 1;
+        out.indices.push(a, c2, b, b, c2, d);
       }
     }
   }
 
-  function petalWidth(u, pointed) {
-    if (pointed) return smooth(0, 0.18, u) * Math.pow(Math.max(0, 1 - u), 0.7) * 1.35;
-    var base = 0.2 + 0.8 * smooth(0, 0.55, u);
-    var tip = u <= 0.6 ? 1 : Math.sqrt(Math.max(0, 1 - Math.pow((u - 0.6) / 0.4, 2)));
+  /* Ширина лепестка вдоль длины. p — «острота» кончика: 0 — округлый, 1 — заострённый */
+  function petalWidth(u, p) {
+    var base = 0.5 + 0.5 * smooth(0, 0.5, u);
+    var e = lerp(2.0, 1.15, p);
+    var k = lerp(0.5, 0.9, p);
+    var tip = u <= 0.58 ? 1 : Math.pow(Math.max(0, 1 - Math.pow((u - 0.58) / 0.42, e)), k);
     return base * tip;
   }
 
-  function addPetal(out, o) {
+  /* Пять ярусов лепестков (внутренний → внешний). Размеры в единицах сцены:
+     ширина бутона ≈ 2.0, высота ≈ 2.3 (отношение ≈ 1.15–1.2).
+     r0 / rMid / rTip — радиус у основания, на «боках бокала» и у верхней кромки;
+     neck + rollY формируют S-образный отгиб кромки у внешних ярусов. */
+  var TIERS = [
+    { count: 3, r0: 0.04, rMid: 0.15, rTip: 0.02, y0: 0.3,   yTop: 2.36, omega: 1.5,  point: 1.0,  roll: 0.0,  ruffle: 0.0,  neck: 0.0,  rollY: 0.0 },
+    { count: 5, r0: 0.10, rMid: 0.32, rTip: 0.08, y0: 0.12,  yTop: 2.32, omega: 1.3,  point: 0.65, roll: 0.01, ruffle: 0.0,  neck: 0.0,  rollY: 0.0 },
+    { count: 6, r0: 0.18, rMid: 0.57, rTip: 0.42, y0: 0.0,   yTop: 2.26, omega: 1.1,  point: 0.3,  roll: 0.03, ruffle: 0.0,  neck: 0.0,  rollY: 0.0 },
+    { count: 6, r0: 0.26, rMid: 0.77, rTip: 0.84, y0: -0.09, yTop: 2.16, omega: 0.95, point: 0.0,  roll: 0.05, ruffle: 0.02, neck: 0.06, rollY: 0.12 },
+    { count: 6, r0: 0.3,  rMid: 0.84, rTip: 0.92, y0: -0.15, yTop: 2.2,  omega: 0.84, point: 0.0,  roll: 0.08, ruffle: 0.03, neck: 0.1,  rollY: 0.22 }
+  ];
+
+  // число лепестков по ярусам для N = 24…28 (базовое распределение: 3-5-6-6-6 = 26)
+  function tierCounts(N) {
+    var counts = TIERS.map(function (t) { return t.count; });
+    var diff = N - 26;
+    var order = [4, 3, 2, 4, 3, 2];
+    var i = 0;
+    while (diff !== 0 && i < 24) {
+      var k = order[i % order.length];
+      if (diff > 0) { counts[k]++; diff--; } else if (counts[k] > 3) { counts[k]--; diff++; }
+      i++;
+    }
+    return counts;
+  }
+
+  // палитра вершин: золото, багрово-золотая тень между слоями, золотой блик по краям
+  var C_GOLD = [0.79, 0.635, 0.153];     // #c9a227
+  var C_HOT = [0.965, 0.867, 0.525];     // блик кромки
+  var C_DEEP = [0.47, 0.06, 0.03];       // глубокий багровый (#8b0000 в золоте)
+
+  function mix3(a, b, t) {
+    return [lerp(a[0], b[0], t), lerp(a[1], b[1], t), lerp(a[2], b[2], t)];
+  }
+
+  function petalColor(u, v, tier, offIndex) {
+    var depth = 1 - tier / 4;                                    // внутренние ярусы глубже в тени
+    var base = (1 - smooth(0.0, 0.62, u)) * (0.5 + 0.5 * depth); // тень у основания лепестка
+    var overlap = smooth(0.35, 1.0, v) * (1 - smooth(0.45, 0.95, u)) * 0.8; // кромка, прикрытая соседним лепестком
+    var c = mix3(C_GOLD, C_DEEP, clamp01(base * 0.9 + overlap));
+    var edge = Math.max(smooth(0.72, 1.0, -v), smooth(0.84, 1.0, u)); // золотой блик: свободная кромка и верх
+    c = mix3(c, C_HOT, edge * 0.65);
+    var vary = 1 + 0.07 * Math.sin(offIndex * 2.3);              // соседние лепестки чуть различаются по тону
+    return [Math.min(1, c[0] * vary), Math.min(1, c[1] * vary), Math.min(1, c[2] * vary)];
+  }
+
+  function addRosePetal(out, o) {
+    var T = o.T;
+    var mr = [];
+    var my = [];
+    for (var iu = 0; iu <= o.uSeg; iu++) {
+      var u = iu / o.uSeg;
+      var a = Math.sin(Math.PI / 2 * smooth(0, 0.72, u));
+      var close = smoother(0.5, 1.0, u);
+      var bump = Math.sin(Math.PI * clamp01((u - 0.6) / 0.3));
+      mr.push(T.r0 + (T.rMid - T.r0) * a + (T.rTip - T.rMid) * close - T.neck * bump * bump + o.off);
+      my.push(T.y0 + (T.yTop - T.y0) * (0.82 * u + 0.18 * Math.sin(u * Math.PI / 2)) - T.rollY * Math.pow(smooth(0.78, 1, u), 2));
+    }
+    addGrid(out, o.uSeg, o.vSeg, function (uu, v, i) {
+      var wp = petalWidth(uu, T.point);
+      var phi = o.az + v * T.omega * wp;
+      var rr = mr[i] + T.roll * v * v * Math.pow(uu, 2.2) + T.ruffle * Math.sin(v * 6 + o.phase) * Math.pow(uu, 3);
+      var yy = my[i] - T.roll * 0.5 * v * v * Math.pow(uu, 2);
+      return [rr * Math.sin(phi), yy, rr * Math.cos(phi)];
+    }, function (uu, v) {
+      return petalColor(uu, v, o.tier, o.index);
+    });
+  }
+
+  /* Чашелистик (острый, отогнутый вниз) — средняя линия интегрируется по углу θ(u) */
+  function sepalWidth(u) {
+    return smooth(0, 0.18, u) * Math.pow(Math.max(0, 1 - u), 0.7) * 1.35;
+  }
+
+  function addSepal(out, o) {
     var mr = [o.r0];
     var my = [o.y0];
     var r = o.r0;
@@ -104,42 +199,39 @@
       my.push(y);
     }
     addGrid(out, o.uSeg, o.vSeg, function (u, v, iu) {
-      var wp = petalWidth(u, o.pointed);
-      var phi = o.az + v * o.omega * wp;
-      var rr = mr[iu] + o.roll * v * v * Math.pow(u, 2.2) + o.ruffle * Math.sin(v * 7 + o.phase) * Math.pow(u, 3);
-      var yy = my[iu] - o.roll * 0.6 * v * v * Math.pow(u, 2);
-      return [rr * Math.sin(phi), yy, rr * Math.cos(phi)];
+      var phi = o.az + v * o.omega * sepalWidth(u);
+      var rr = mr[iu];
+      return [rr * Math.sin(phi), my[iu], rr * Math.cos(phi)];
+    }, function (u) {
+      var c = mix3(C_DEEP, C_GOLD, smooth(0.0, 0.7, u));
+      return mix3(c, C_HOT, smooth(0.85, 1, u) * 0.35);
     });
   }
 
-  function petalParams(i, N, uSeg, vSeg) {
-    var t = N > 1 ? i / (N - 1) : 0;
-    return {
-      az: i * GOLDEN_ANGLE,
-      r0: lerp(0.05, 0.4, Math.pow(t, 1.1)),
-      y0: lerp(0.0, -0.2, t),
-      len: lerp(0.95, 1.5, Math.pow(t, 0.8)),
-      th0: lerp(0.06, 0.26, t),
-      thc: lerp(-0.7, 0.95, smooth(0.2, 1, t)),
-      omega: lerp(1.4, 0.85, t),
-      roll: lerp(0.01, 0.16, smooth(0.35, 1, t)),
-      ruffle: 0.03 * smooth(0.5, 1, t),
-      phase: i * 1.7,
-      pointed: false,
-      uSeg: uSeg,
-      vSeg: vSeg
-    };
-  }
-
   function roseHeadData(N, uSeg, vSeg) {
-    var out = { positions: [], indices: [] };
-    for (var i = 0; i < N; i++) addPetal(out, petalParams(i, N, uSeg, vSeg));
-    // чашелистики: острые отогнутые вниз
+    var out = { positions: [], indices: [], colors: [] };
+    var counts = tierCounts(N);
+    var index = 0;
+    for (var tier = 0; tier < TIERS.length; tier++) {
+      for (var j = 0; j < counts[tier]; j++) {
+        addRosePetal(out, {
+          T: TIERS[tier],
+          tier: tier,
+          index: index,
+          az: index * GOLDEN_ANGLE,
+          off: (j - (counts[tier] - 1) / 2) * 0.036,   // слои чуть смещены по радиусу — лепестки не сливаются
+          phase: index * 1.7,
+          uSeg: uSeg,
+          vSeg: vSeg
+        });
+        index++;
+      }
+    }
+    // чашелистики
     for (var s = 0; s < 5; s++) {
-      addPetal(out, {
-        az: s * (Math.PI * 2 / 5) + 0.3, r0: 0.28, y0: -0.2, len: 0.85,
-        th0: 1.9, thc: 0.5, omega: 0.3, roll: 0, ruffle: 0, phase: s,
-        pointed: true, uSeg: uSeg, vSeg: Math.max(4, vSeg >> 1)
+      addSepal(out, {
+        az: s * (Math.PI * 2 / 5) + 0.3, r0: 0.26, y0: -0.2, len: 0.9,
+        th0: 1.9, thc: 0.5, omega: 0.3, uSeg: uSeg, vSeg: Math.max(6, vSeg >> 1)
       });
     }
     return out;
@@ -170,27 +262,27 @@
     var conn = navigator.connection || {};
     var saver = !!conn.saveData || (navigator.deviceMemory && navigator.deviceMemory <= 2);
 
+    // геометрия одинаково детальная на всех устройствах; на телефонах чуть меньше частиц
     var profile = mobile
       ? {
-          sparks: 220, embers: 90, haze: 9, bars: 32, maxDpr: 1.25, fps: 30, antialias: false,
-          petals: 20, uSeg: 12, vSeg: 8, thorns: 5, stemSeg: 28, stemRadial: 8, leafU: 20
+          sparks: 220, embers: 90, haze: 9, bars: 64,
+          petals: 26, uSeg: 24, vSeg: 16, thorns: 6, stemSeg: 72, stemRadial: 24, leafU: 40,
+          hipW: 40, hipH: 28, ringSeg: 192
         }
       : {
-          sparks: 650, embers: 260, haze: 20, bars: 64, maxDpr: 2, fps: 60, antialias: true,
-          petals: 26, uSeg: 18, vSeg: 12, thorns: 7, stemSeg: 48, stemRadial: 12, leafU: 32
+          sparks: 650, embers: 260, haze: 20, bars: 96,
+          petals: 26, uSeg: 28, vSeg: 20, thorns: 7, stemSeg: 96, stemRadial: 28, leafU: 48,
+          hipW: 48, hipH: 32, ringSeg: 256
         };
 
     profile.mobile = mobile;
     profile.coarse = coarse;
+    profile.fps = saver ? 30 : 60;
 
-    if (saver) {
+    if (saver) { // экономия данных / памяти: меньше только частиц, детализация сохраняется
       profile.sparks = Math.round(profile.sparks * 0.5);
       profile.embers = Math.round(profile.embers * 0.5);
       profile.haze = Math.max(4, Math.round(profile.haze * 0.5));
-      profile.bars = Math.max(24, Math.round(profile.bars * 0.6));
-      profile.petals = Math.max(20, profile.petals - 4);
-      profile.maxDpr = Math.min(profile.maxDpr, 1.25);
-      profile.fps = Math.min(profile.fps, 30);
     }
     return profile;
   }
@@ -307,7 +399,7 @@
      ТЕКСТУРЫ И ОКРУЖЕНИЕ
      ------------------------------------------------------------------------ */
   function createHaloTexture(THREE) {
-    var size = 128;
+    var size = 256; // чёткий градиент без «квадратов»
     var c = document.createElement('canvas');
     c.width = c.height = size;
     var ctx = c.getContext('2d');
@@ -323,9 +415,9 @@
 
   /* Процедурная карта окружения для золота: тёмная студия с тёплыми софтбоксами,
      золотым и неоновым бликами и багровым светом снизу → PMREM */
-  function createEnvironment(THREE, renderer, mobile) {
+  function createEnvironment(THREE, renderer) {
     try {
-      var w = mobile ? 256 : 512;
+      var w = 512;
       var h = w / 2;
       var c = document.createElement('canvas');
       c.width = w;
@@ -392,6 +484,9 @@
   function geometryFromData(THREE, data) {
     var geo = new THREE.BufferGeometry();
     geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(data.positions), 3));
+    if (data.colors && data.colors.length) {
+      geo.setAttribute('color', new THREE.BufferAttribute(new Float32Array(data.colors), 3));
+    }
     geo.setIndex(data.indices);
     geo.computeVertexNormals();
     return geo;
@@ -449,34 +544,44 @@
       envMapIntensity: 1.0
     });
 
+    // лепестки: цвет задаётся вершинами (золото, блик по краям, багровая тень между слоями)
+    var petalMat = new THREE.MeshStandardMaterial({
+      color: 0xffffff,
+      vertexColors: true,
+      metalness: 0.92,
+      roughness: 0.22,
+      side: THREE.DoubleSide,
+      envMap: envMap || null,
+      envMapIntensity: 1.0
+    });
+
     var plant = new THREE.Group();
-    plant.position.y = HEAD_Y;
+    plant.position.y = HEAD_Y - BUD_CENTER_Y;
 
     /* ---- бутон: лепестки + чашелистики одной геометрией ---- */
     var head = new THREE.Mesh(
       geometryFromData(THREE, roseHeadData(profile.petals, profile.uSeg, profile.vSeg)),
-      goldMat
+      petalMat
     );
     plant.add(head);
 
     /* ---- завязь под бутоном ---- */
-    var hipGeo = new THREE.SphereGeometry(0.3, profile.mobile ? 14 : 22, profile.mobile ? 10 : 16);
-    var hip = new THREE.Mesh(hipGeo, goldMat);
+    var hip = new THREE.Mesh(new THREE.SphereGeometry(0.3, profile.hipW, profile.hipH), goldMat);
     hip.scale.set(1, 0.85, 1);
-    hip.position.y = -0.28;
+    hip.position.y = -0.36;
     plant.add(hip);
 
     /* ---- стебель ---- */
     var curve = new THREE.CatmullRomCurve3([
-      new THREE.Vector3(0, -0.28, 0),
-      new THREE.Vector3(0.05, -0.8, 0.04),
-      new THREE.Vector3(-0.09, -1.5, -0.05),
-      new THREE.Vector3(0.12, -2.2, 0.06),
-      new THREE.Vector3(0.04, -2.8, -0.03),
-      new THREE.Vector3(0, -3.2, 0)
+      new THREE.Vector3(0, -0.3, 0),
+      new THREE.Vector3(0.05, -0.85, 0.04),
+      new THREE.Vector3(-0.09, -1.45, -0.05),
+      new THREE.Vector3(0.12, -2.05, 0.06),
+      new THREE.Vector3(0.04, -2.4, -0.03),
+      new THREE.Vector3(0, -2.7, 0)
     ]);
-    var R_TOP = 0.05;
-    var R_BOTTOM = 0.085;
+    var R_TOP = 0.055;
+    var R_BOTTOM = 0.09;
     var stem = createStem(THREE, curve, profile.stemSeg, profile.stemRadial, R_TOP, R_BOTTOM);
     plant.add(new THREE.Mesh(stem.geometry, goldMat));
 
@@ -489,8 +594,8 @@
         .normalize();
     }
 
-    /* ---- шипы: ConeGeometry, острые, загнуты вниз ---- */
-    var coneGeo = new THREE.ConeGeometry(1, 1, 10, 1);
+    /* ---- шипы: ConeGeometry с высокой детализацией, острые, загнуты вниз ---- */
+    var coneGeo = new THREE.ConeGeometry(1, 1, 28, 6, false);
     var yAxis = new THREE.Vector3(0, 1, 0);
     var thornCount = profile.thorns;
     for (var k = 0; k < thornCount; k++) {
@@ -502,8 +607,8 @@
       var dir = out.clone().multiplyScalar(0.95).addScaledVector(T, 0.55).normalize();
 
       var rs = lerp(R_TOP, R_BOTTOM, smooth(0, 1, s));
-      var len = lerp(0.28, 0.46, s);
-      var baseR = lerp(0.055, 0.09, s);
+      var len = lerp(0.3, 0.5, s);
+      var baseR = lerp(0.06, 0.1, s);
 
       var thorn = new THREE.Mesh(coneGeo, goldMat);
       thorn.scale.set(baseR, len, baseR);
@@ -513,10 +618,10 @@
     }
 
     /* ---- два заострённых зазубренных листа ---- */
-    var leafPlacements = [{ s: 0.36, a: 0.6 }, { s: 0.58, a: 0.6 + Math.PI }];
+    var leafPlacements = [{ s: 0.36, a: 0.6 }, { s: 0.6, a: 0.6 + Math.PI }];
     leafPlacements.forEach(function (lp) {
-      var leaf = leafData(profile.leafU, 6, {
-        width: 0.28, length: 1.15, teeth: 16, serr: 0.16, rise: 0.25, droop: 0.55, fold: 0.35
+      var leaf = leafData(profile.leafU, 8, {
+        width: 0.3, length: 1.25, teeth: 16, serr: 0.16, rise: 0.27, droop: 0.58, fold: 0.35
       });
       var geo = geometryFromData(THREE, leaf);
 
@@ -557,8 +662,8 @@
       renderer = new THREE.WebGLRenderer({
         canvas: canvas,
         alpha: true,
-        antialias: profile.antialias,
-        powerPreference: profile.mobile ? 'low-power' : 'high-performance'
+        antialias: true,
+        powerPreference: 'high-performance'
       });
     } catch (err) {
       fallback(canvas);
@@ -603,7 +708,7 @@
     scene.add(new THREE.AmbientLight(0x221a10, 0.5));
 
     var goldBack = new THREE.PointLight(COLOR.gold, 2.4, 0);       // золотой контровой свет
-    goldBack.position.set(2.4, 3.8, -3.2);
+    goldBack.position.set(2.4, 4.2, -3.2);
     var goldFill = new THREE.PointLight(COLOR.gold, 0.9, 0);       // мягкий фронтальный подсвет
     goldFill.position.set(3.5, 2.2, 5);
     var bloodUnder = new THREE.PointLight(COLOR.blood, 2.4, 0);    // кроваво-красный отблеск снизу
@@ -613,7 +718,7 @@
     scene.add(goldBack, goldFill, bloodUnder, neonRim);
 
     /* ---- карта окружения для металла ---- */
-    var envRT = createEnvironment(THREE, renderer, profile.mobile);
+    var envRT = createEnvironment(THREE, renderer);
 
     /* ---- роза ---- */
     var rose = new THREE.Group();        // позиция, масштаб, наклон за курсором
@@ -637,7 +742,7 @@
     rose.add(halo);
 
     /* ---- кольцо частот вокруг бутона (необязательно) ---- */
-    var RING_R = 2.5;
+    var RING_R = 2.6;
     var ringSpin = new THREE.Group();
     var bars = null;
     var dummy = new THREE.Object3D();
@@ -650,14 +755,14 @@
       ringTilt.add(ringSpin);
 
       var torus = new THREE.Mesh(
-        new THREE.TorusGeometry(RING_R, 0.012, 6, 128),
+        new THREE.TorusGeometry(RING_R, 0.012, 10, profile.ringSeg),
         new THREE.MeshBasicMaterial({ color: COLOR.gold, transparent: true, opacity: 0.75 })
       );
       torus.rotation.x = Math.PI / 2;
       ringSpin.add(torus);
 
       var torusOuter = new THREE.Mesh(
-        new THREE.TorusGeometry(RING_R * 1.18, 0.008, 6, 128),
+        new THREE.TorusGeometry(RING_R * 1.18, 0.008, 8, profile.ringSeg),
         new THREE.MeshBasicMaterial({ color: COLOR.bloodBright, transparent: true, opacity: 0.5 })
       );
       torusOuter.rotation.x = Math.PI / 2;
@@ -742,7 +847,7 @@
     function layout() {
       var w = Math.max(1, host.clientWidth);
       var h = Math.max(1, host.clientHeight);
-      var dpr = Math.min(window.devicePixelRatio || 1, profile.maxDpr);
+      var dpr = Math.min(window.devicePixelRatio || 1, 2); // не занижаем на телефонах
 
       renderer.setPixelRatio(dpr);
       renderer.setSize(w, h, false);
@@ -789,7 +894,7 @@
 
       rose.rotation.y = input.x * 0.5 + input.scroll * 1.2;
       rose.rotation.z = -input.x * 0.24 + Math.sin(time * 0.6) * 0.045;
-      rose.rotation.x = 0.14 - input.y * 0.26 + Math.sin(time * 0.5) * 0.03;
+      rose.rotation.x = 0.26 - input.y * 0.22 + Math.sin(time * 0.5) * 0.03; // базовый наклон к зрителю ≈ 15°
       rose.position.y = baseY + Math.sin(time * 0.9) * 0.07 * baseScale;
       rose.position.z = -input.scroll * 3.5;
 
